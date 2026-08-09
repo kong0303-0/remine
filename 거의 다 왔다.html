@@ -458,12 +458,10 @@ const IntroStep = ({ onNext, isEditMode, scrollY }) => {
         </div>
 
         {/* Character Image */}
-        <object 
-          type="image/svg+xml" 
-          data="디자인!/캐릭터1.svg?v=5" 
-          width="1456"
-          height="1583"
-          style={{ position: 'absolute', left: '80.82px', top: '80.4653px', width: '1455.65px', height: '1583.00px' }}
+        <img 
+          src="디자인!/캐릭터1.svg" 
+          alt="캐릭터1"
+          style={{ position: 'absolute', left: '80.82px', top: '80.4653px', width: '1455.65px', height: '1583.00px', objectFit: 'contain' }}
           className="pointer-events-none select-none"
         />
 
@@ -526,17 +524,16 @@ const IntroStep = ({ onNext, isEditMode, scrollY }) => {
         </div>
         
         {/* Middle SVG block */}
-        <object 
-          type="image/svg+xml" 
-          data="디자인!/캐릭터3.svg?v=5" 
-          width="1411"
-          height="1409"
+        <img 
+          src="디자인!/캐릭터3.svg" 
+          alt="캐릭터3"
           style={{ 
             position: 'absolute', 
             left: '-64.19px', 
             top: '783.1799px', 
             width: '1410.99px', 
-            height: '1409.42px' 
+            height: '1409.42px',
+            objectFit: 'contain' 
           }}
           className="pointer-events-none select-none"
         />
@@ -780,13 +777,11 @@ const MoodStep = ({ moods, scrollY, textData, onTextUpdate, onMoodClick, onMoodS
           </div>
 
           {/* Center-Right stylized asterisk drawing */}
-          <object
-            type="image/svg+xml"
-            data="디자인!/심볼 선.svg?v=1"
-            width="560"
-            height="560"
+          <img
+            src="디자인!/심볼 선.svg"
+            alt="심볼"
             className="pointer-events-none select-none absolute"
-            style={{ position: 'absolute', left: '882px', top: '1047.5634px', width: '560px', height: '560px' }}
+            style={{ position: 'absolute', left: '882px', top: '1047.5634px', width: '560px', height: '560px', objectFit: 'contain' }}
           />
 
           {/* Bottom-Left instructions */}
@@ -949,12 +944,10 @@ const MoodStep = ({ moods, scrollY, textData, onTextUpdate, onMoodClick, onMoodS
 
         {/* Centered Footer: SVG logo */}
         <div style={{ position: 'absolute', left: '752.12px', top: `${lh - 90}px`, width: '115.77px', height: '23.87px' }} className="select-none pointer-events-none">
-          <object
-            type="image/svg+xml"
-            data="디자인!/로고.svg"
-            width="115.77"
-            height="23.87"
-            className="w-full h-full"
+          <img
+            src="디자인!/로고.svg"
+            alt="로고"
+            className="w-full h-full object-contain"
           />
         </div>
       </section>
