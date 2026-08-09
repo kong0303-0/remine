@@ -1,0 +1,3611 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>나만의 캐릭터 옷 입히기 (아이패드용)</title>
+    
+    <!-- Apple Web App Metadata (For standalone fullscreen on Home Screen) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta id="theme-color-meta" name="theme-color" content="#ededf2">
+    <meta name="apple-mobile-web-app-title" content="GUMU">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- localforage -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    <!-- html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- Import Map for React and Lucide -->
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "lucide-react": "https://esm.sh/lucide-react@0.294.0"
+        }
+    }
+    </script>
+    
+    <!-- Babel Standalone for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin="anonymous"></script>
+
+    <style>
+        @font-face {
+            font-family: 'Freesentation';
+            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-4Regular.woff2') format('woff2');
+            font-weight: 400;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Freesentation';
+            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-8ExtraBold.woff2') format('woff2');
+            font-weight: 800;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Presentation';
+            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-4Regular.woff2') format('woff2');
+            font-weight: 400;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Presentation';
+            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-8ExtraBold.woff2') format('woff2');
+            font-weight: 800;
+            font-style: normal;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f1f5f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        #root {
+            width: 1620px;
+            height: 2160px;
+            flex-shrink: 0;
+            background-color: #ffffff;
+            position: absolute;
+            left: 50%;
+            top: 0px;
+            /* Center the 1620x2160 container horizontally and align to the top */
+            transform: translateX(-50%) translate3d(0, 0, 0);
+            transform-origin: top center;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        /* Override Tailwind screen height/width utility classes to stay within #root */
+        .min-h-screen {
+            min-height: 2160px !important;
+            height: 2160px !important;
+        }
+        .h-screen {
+            height: 2160px !important;
+        }
+        .w-screen {
+            width: 100% !important;
+        }
+        .min-w-screen {
+            min-width: 100% !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-presets="react" data-type="module">
+
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { createRoot } from 'react-dom/client';
+import { 
+  ArrowLeft, 
+  ArrowRight, 
+  Palette, 
+  Upload, 
+  ArrowUpRight, 
+  Trash2, 
+  MousePointer2, 
+  User, 
+  Sparkles, 
+  Pin, 
+  PinOff, 
+  RotateCcw, 
+  RefreshCw, 
+  Magnet, 
+  Search, 
+  Plus, 
+  Minus,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Layers,
+  ShoppingBag,
+  Share2, 
+  Download,
+  ImageIcon,
+  Loader2,
+  Edit2,
+  Heart,
+  Camera,
+  Check,
+  Play,
+  X,
+  Type,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Maximize2,
+  Minimize2,
+  MoveVertical,
+  MoveHorizontal,
+  Settings,
+  Film,
+  Move,
+  Link,
+  Unlink,
+  CheckSquare,
+  Square
+} from 'lucide-react';
+
+// Gemini API Key (실행 환경에서 자동으로 주입됨)
+const apiKey = "AIzaSyBNNfXugdOySZUiY4E7Z81vI_RN3jgsw-I";
+
+// 5단계(헤어), 6단계(옷), 7단계(소품) 데이터 통합 관리 - 8가지 무드 전체 경로 정의
+const MOOD_DATA = {
+  // 05: Hair (Starting points)
+  '5.1': { id: '5.1', step: '05', name: '지적인', prev: null, next: '6.1' },
+  '5.2': { id: '5.2', step: '05', name: '로맨틱', prev: null, next: '6.2' },
+  '5.3': { id: '5.3', step: '05', name: '우아한', prev: null, next: '6.3' },
+  '5.4': { id: '5.4', step: '05', name: '액티브한', prev: null, next: '6.4' },
+  '5.5': { id: '5.5', step: '05', name: '소박한', prev: null, next: '6.5' },
+  '5.6': { id: '5.6', step: '05', name: '모던한', prev: null, next: '6.6' },
+  '5.7': { id: '5.7', step: '05', name: '미니멀한', prev: null, next: '6.7' },
+  '5.8': { id: '5.8', step: '05', name: '이국적인', prev: null, next: '6.8' },
+  
+  // 06: Clothing
+  '6.1': { id: '6.1', step: '06', name: '지적인', prev: '5.1', next: '7.1' },
+  '6.2': { id: '6.2', step: '06', name: '로맨틱', prev: '5.2', next: '7.2' },
+  '6.3': { id: '6.3', step: '06', name: '우아한', prev: '5.3', next: '7.3' },
+  '6.4': { id: '6.4', step: '06', name: '액티브한', prev: '5.4', next: '7.4' },
+  '6.5': { id: '6.5', step: '06', name: '소박한', prev: '5.5', next: '7.5' },
+  '6.6': { id: '6.6', step: '06', name: '모던한', prev: '5.6', next: '7.6' },
+  '6.7': { id: '6.7', step: '06', name: '미니멀한', prev: '5.7', next: '7.7' },
+  '6.8': { id: '6.8', step: '06', name: '이국적인', prev: '5.8', next: '7.8' },
+
+  // 07: Accessory (Leading to page8)
+  '7.1': { id: '7.1', step: '07', name: '지적인', prev: '6.1', next: 'page8' },
+  '7.2': { id: '7.2', step: '07', name: '로맨틱', prev: '6.2', next: 'page8' },
+  '7.3': { id: '7.3', step: '07', name: '우아한', prev: '6.3', next: 'page8' },
+  '7.4': { id: '7.4', step: '07', name: '액티브한', prev: '6.4', next: 'page8' },
+  '7.5': { id: '7.5', step: '07', name: '소박한', prev: '6.5', next: 'page8' },
+  '7.6': { id: '7.6', step: '07', name: '모던한', prev: '6.6', next: 'page8' },
+  '7.7': { id: '7.7', step: '07', name: '미니멀한', prev: '6.7', next: 'page8' },
+  '7.8': { id: '7.8', step: '07', name: '이국적인', prev: '6.8', next: 'page8' },
+};
+
+// 8가지 스타일 결과 데이터
+const STYLES_DESC = [
+  { id: '9.1', name: 'Intelligent', sub: '지적인', color: '#334155', accent: '#94a3b8', desc: { mood: '지적이고 단정한 매력을 풍기는 스타일입니다.', mall: '29CM, W컨셉, COS, 아르켓(ARKET)' } },
+  { id: '9.2', name: 'Romantic', sub: '로맨틱', color: '#fce7f3', accent: '#ec4899', desc: { mood: '사랑스럽고 따뜻한 감성이 묻어나는 스타일입니다.', mall: '스타일난다, 아뜨랑스, 프롬비기닝' } },
+  { id: '9.3', name: 'Elegant', sub: '우아한', color: '#f5f5f4', accent: '#78350f', desc: { mood: '우아하고 품격 있는 무드를 지향합니다.', mall: '타임(TIME), 마인(MINE), 띠어리(Theory)' } },
+  { id: '9.4', name: 'Active', sub: '액티브한', color: '#ecfdf5', accent: '#10b981', desc: { mood: '에너지가 넘치고 생동감 있는 스타일입니다.', mall: '나이키, 아디다스, 룰루레몬, 안다르' } },
+  { id: '9.5', name: 'Rustic', sub: '소박한', color: '#fef3c7', accent: '#d97706', desc: { mood: '자연스럽고 편안한 전원의 정취입니다.', mall: '슬로우앤, 젬마월드, 리얼코코' } },
+  { id: '9.6', name: 'Modern', sub: '모던한', color: '#18181b', accent: '#ffffff', desc: { mood: '동시대적인 감각의 시크한 스타일입니다.', mall: '무신사 스탠다드, 자라(ZARA), 앤더슨벨' } },
+  { id: '9.7', name: 'Minimal', sub: '미니멀한', color: '#ffffff', accent: '#000000', desc: { mood: '비움의 미학을 극대화한 스타일입니다.', mall: '로우클래식, 르메르, 질샌더' } },
+  { id: '9.8', name: 'Exotic', sub: '이국적인', color: '#fff7ed', accent: '#f97316', desc: { mood: '신비롭고 이국적인 분위기를 자아냅니다.', mall: '앤솔로지, 프리피플, 자라 홈 패션' } },
+];
+
+// 이미지 압축 유틸리티 (로컬 스토리지 5MB 한계 극복 및 성능 최적화용)
+const compressImage = (dataUrl, maxWidth = 1000) => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.src = dataUrl;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+      if (width > maxWidth) {
+        height = height * (maxWidth / width);
+        width = maxWidth;
+      }
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      const mimeType = dataUrl.startsWith('data:image/png') ? 'image/png' : (dataUrl.startsWith('data:image/webp') ? 'image/webp' : 'image/jpeg');
+      resolve(canvas.toDataURL(mimeType, 0.7)); 
+    };
+    img.onerror = () => resolve(dataUrl);
+  });
+};
+
+// --- [공통 컴포넌트] TextStyleControls ---
+const TextStyleControls = ({ config, onChange, onClose }) => {
+  return (
+    <div className="absolute z-[400] bg-white shadow-2xl border border-gray-100 p-5 rounded-3xl flex flex-col gap-5 min-w-[240px] top-0 left-full ml-4 animate-in fade-in zoom-in duration-200 pointer-events-auto">
+      <div className="space-y-2 text-left border-b border-gray-50 pb-3">
+        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">정렬</span>
+        <div className="flex gap-2">
+          {[{ id: 'left', Icon: AlignLeft }, { id: 'center', Icon: AlignCenter }, { id: 'right', Icon: AlignRight }].map(({ id, Icon }) => (
+            <button key={id} type="button" onClick={() => onChange('textAlign', id)} className={`p-2 rounded-lg transition-colors ${config.textAlign === id ? 'bg-black text-white' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}><Icon size={16} /></button>
+          ))}
+        </div>
+      </div>
+      <div className="space-y-2 text-left border-b border-gray-50 pb-3">
+        <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest"><span>가로 위치</span><span>{config.marginLeft || 0}px</span></div>
+        <div className="flex items-center gap-3"><MoveHorizontal size={14} className="text-gray-300" /><input type="range" min="0" max="600" step="5" value={config.marginLeft || 0} onChange={(e) => onChange('marginLeft', parseInt(e.target.value))} className="w-full h-1 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-black" /></div>
+      </div>
+      <div className="space-y-2 text-left border-b border-gray-50 pb-3">
+        <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest"><span>세로 위치</span><span>{config.marginTop || 0}px</span></div>
+        <div className="flex items-center gap-3"><MoveVertical size={14} className="text-gray-300" /><input type="range" min="0" max="400" step="5" value={config.marginTop || 0} onChange={(e) => onChange('marginTop', parseInt(e.target.value))} className="w-full h-1 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-black" /></div>
+      </div>
+      <div className="space-y-2 text-left border-b border-gray-50 pb-3">
+        <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest"><span>크기</span><span>{config.fontSize}px</span></div>
+        <input type="range" min="12" max="150" value={config.fontSize} onChange={(e) => onChange('fontSize', parseInt(e.target.value))} className="w-full h-1 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-black" />
+      </div>
+      <div className="space-y-2 text-left">
+        <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest"><span>행간</span><span>{config.lineHeight}</span></div>
+        <input type="range" min="0.5" max="3.0" step="0.1" value={config.lineHeight} onChange={(e) => onChange('lineHeight', parseFloat(e.target.value))} className="w-full h-1 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-black" />
+      </div>
+      <button type="button" onClick={onClose} className="text-[10px] font-bold text-gray-300 hover:text-black transition-colors uppercase text-left">닫기</button>
+    </div>
+  );
+};
+
+// --- [공통 컴포넌트] EditableBlock ---
+const EditableBlock = ({ id, tag: Tag, textData, onUpdate, className = "", style = {}, isEditMode = true }) => {
+  const [showControls, setShowControls] = useState(false);
+  const data = textData[id] || { content: "", fontSize: 16, lineHeight: 1.5, textAlign: 'center', marginTop: 0, marginLeft: 0 };
+  const handleStyleChange = (prop, value) => onUpdate(id, { ...data, [prop]: value });
+  return (
+    <div className="relative group/block w-full pointer-events-auto flex items-start z-[150]" style={{ justifyContent: data.textAlign === 'left' ? 'flex-start' : data.textAlign === 'right' ? 'flex-end' : 'center', marginTop: `${data.marginTop || 0}px`, paddingLeft: `${data.marginLeft || 0}px` }}>
+      {isEditMode && <div className="absolute -left-16 top-0 opacity-0 group-hover/block:opacity-100 transition-opacity flex flex-col gap-2 z-[160]"><button type="button" title="스타일 편집" onClick={(e) => { e.stopPropagation(); setShowControls(!showControls); }} className={`p-3 rounded-full shadow-2xl transition-all transform hover:scale-110 ${showControls ? 'bg-black text-white' : 'bg-white text-gray-500 hover:text-black hover:shadow-xl'}`}><Type size={20} /></button></div>}
+      {showControls && isEditMode && <TextStyleControls config={data} onChange={handleStyleChange} onClose={() => setShowControls(false)} />}
+      <Tag contentEditable={isEditMode ? "true" : "false"} suppressContentEditableWarning onBlur={(e) => isEditMode && onUpdate(id, { ...data, content: e.target.innerText })} style={{ fontSize: `${data.fontSize}px`, lineHeight: data.lineHeight, textAlign: data.textAlign, whiteSpace: 'pre-wrap', wordBreak: 'keep-all', overflowWrap: 'break-word', width: 'auto', maxWidth: '100%', ...style }} className={`outline-none transition-colors ${isEditMode ? 'focus:ring-2 focus:ring-black/5 hover:bg-black/[0.03] cursor-text' : ''} px-3 py-1 rounded-2xl ${className}`}>{String(data.content || "")}</Tag>
+    </div>
+  );
+};
+
+// --- [화면 1] WelcomeStep ---
+const WelcomeStep = ({ userName, setUserName, onNext, isEditMode, setIsEditMode, onExport, onImport }) => {
+  const [showButton, setShowButton] = useState(false);
+  const hasName = userName.trim().length > 0;
+  const fileInputRef = useRef(null);
+
+  const tapRef = useRef({ count: 0, lastTime: 0 });
+
+  const handleScreenClick = (e) => {
+    const now = Date.now();
+    if (now - tapRef.current.lastTime < 500) {
+      tapRef.current.count += 1;
+    } else {
+      tapRef.current.count = 1;
+    }
+    tapRef.current.lastTime = now;
+
+    if (tapRef.current.count >= 3 || (e && e.detail >= 3)) {
+      setShowButton(prev => !prev);
+      tapRef.current.count = 0;
+    }
+  };
+
+  const triggerImport = () => {
+    if (window.confirm("주의: 세팅 파일을 불러오면 현재 기기에 있는 모든 앱 데이터가 덮어씌워집니다. 불러오시겠습니까?")) {
+      fileInputRef.current.click();
+    }
+  };
+
+  return (
+    <div 
+      onClick={handleScreenClick} 
+      className="min-h-screen bg-[#ededf2] flex flex-col justify-between text-[#575759] font-sans transition-opacity duration-700 relative select-none"
+      style={{ padding: '70.3212px', boxSizing: 'border-box' }}
+    >
+      {showButton && (
+        <div className="fixed top-4 right-4 flex items-center gap-2 z-[999] animate-in fade-in slide-in-from-top-2 duration-300">
+          <button type="button" onClick={onExport} className="px-4 py-2 bg-[#ededf2] text-[#575759] border border-[#b7b7bc] text-xs font-bold font-mono hover:bg-[#b7b7bc] transition-all active:scale-95">
+            EXPORT
+          </button>
+          <button type="button" onClick={triggerImport} className="px-4 py-2 bg-[#ededf2] text-[#575759] border border-[#b7b7bc] text-xs font-bold font-mono hover:bg-[#b7b7bc] transition-all active:scale-95">
+            IMPORT
+          </button>
+          <input type="file" accept=".json" ref={fileInputRef} onChange={onImport} className="hidden" />
+          <button 
+            type="button" 
+            onClick={(e) => { e.stopPropagation(); setIsEditMode(!isEditMode); }} 
+            className={`px-4 py-2 text-xs font-bold transition-all active:scale-95 border ${!isEditMode ? 'bg-[#575759] text-[#ededf2] border-[#575759]' : 'bg-[#ededf2] text-[#575759] border-[#b7b7bc]'}`} 
+            title="모드 전환"
+          >
+            {!isEditMode ? '편집 모드 ON' : '사용자 모드 ON'}
+          </button>
+        </div>
+      )}
+
+      {/* SVG Logo (Absolutely Positioned) */}
+      <svg 
+        id="Layer_1" 
+        data-name="Layer 1" 
+        xmlns="http://www.w3.org/2000/svg" 
+        viewBox="0 0 115.77 23.84" 
+        style={{
+          position: 'absolute',
+          top: '756.4334px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '685.6398px',
+          height: 'auto',
+          zIndex: 10
+        }}
+        className="select-none pointer-events-none"
+      >
+        <defs>
+          <style>
+            {`.cls-1 { fill: #575759; stroke-width: 0px; }`}
+          </style>
+        </defs>
+        <path className="cls-1" d="M70.45,1.71l-.77-.27.36-.73-.27-.27-.73.36-.27-.77h-.38l-.27.77-.73-.36-.27.27.36.73-.77.27v.38l.77.27-.36.73c.14.14.13.13.27.27l.73-.36.27.77h.38l.27-.77.73.36c.14-.14.13-.13.27-.27l-.36-.73.77-.27v-.38Z"/>
+        <path className="cls-1" d="M28.32,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C30.5,4.34,28.03.38,22.69,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88.17,4.51,3.21,10.66,11.24,10.66,6.93,0,10.06-5.29,10.28-6.17M14.04,9.52c.17-2.03,2.61-6.24,7.26-6.39,6.33,0,7.26,5.11,7.26,6.39h-14.51Z"/>
+        <path className="cls-1" d="M111.79,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C113.98,4.34,111.5.38,106.16,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88s3.21,10.66,11.24,10.66c6.93,0,10.06-5.29,10.28-6.17M97.51,9.52c.17-2.03,2.61-6.24,7.26-6.39,6.33,0,7.26,5.11,7.26,6.39h-14.51Z"/>
+        <rect className="cls-1" x="66.69" y="6.47" width="3.76" height="17.37"/>
+        <path className="cls-1" d="M83,0C80.01,0,78.33,1.55,77.33,2.53V0h-3.76v23.84h3.76v-13c0-3.82,1.62-7.71,6.14-7.71,3.46,0,4.76,3.4,4.76,7.85v12.86h3.76v-12.86C91.98,1.27,86.37,0,83,0Z"/>
+        <path className="cls-1" d="M56.41,0c-2.88,0-5.17,1.9-6.02,4.02C48.63.61,46.34,0,44.04,0,42.08,0,40.21,1.3,39.2,2.86V0h-3.76v23.84h3.76v-15.15c0-2.93,2.18-5.55,4.87-5.55,2.24,0,3.57,2.03,3.57,5.55v15.15h3.76v-15.15c0-2.42,2.06-5.55,4.59-5.55s3.8,2.16,3.8,5.55v15.15h3.76v-12.86C63.55,9.19,63.97,0,56.41,0Z"/>
+        <path className="cls-1" d="M10.33.59c-.69-.2-1.4-.31-2.12-.31-1.84,0-3.57,1.2-4.44,2.78V0H0v23.84h3.76v-13.64c0-4.21,2.51-5.77,4.7-6.23.6-.13,1.23-.08,1.86.09V.59Z"/>
+      </svg>
+
+      {/* Input & Greeting Box (Absolutely Positioned) */}
+      <div 
+        style={{
+          position: 'absolute',
+          top: '993.2px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '700px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          gap: '64px',
+          zIndex: 10
+        }}
+      >
+        <input 
+          type="text" 
+          placeholder="이름을 입력해주세요" 
+          value={userName} 
+          onChange={(e) => setUserName(e.target.value)} 
+          style={{ textAlign: 'left' }}
+          className="w-full border-b-2 border-[#b7b7bc] focus:border-[#575759] py-6 text-[44px] font-bold bg-transparent outline-none transition-colors placeholder-[#b7b7bc] text-[#575759]"
+          autoFocus 
+        />
+        
+        <div className={`transition-all duration-1000 transform ${hasName ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+          <p className="text-[#575759] text-[30px] break-keep leading-relaxed text-left font-bold m-0">
+            반갑습니다, <strong className="font-black border-b-2 border-[#575759] pb-1">{String(userName)}</strong>님<br/>
+            remine을 찾아오신 것을 환영해요
+          </p>
+        </div>
+      </div>
+
+      {/* Next Button (Absolutely Positioned) */}
+      <div 
+        className={`transition-all duration-1000 delay-100 transform ${hasName ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
+        style={{
+          position: 'absolute',
+          bottom: '106.6109px',
+          right: '91.2582px',
+          width: '151.0284px',
+          height: '151.0284px',
+          zIndex: 100
+        }}
+      >
+        <button 
+          type="button" 
+          onClick={onNext} 
+          className="transition-all active:scale-95 hover:opacity-90 cursor-pointer pointer-events-auto border-none bg-transparent p-0 w-full h-full"
+        >
+          <svg viewBox="0 0 151.03 151.03" className="w-full h-full">
+            <path fill="#575759" d="M151.03,67.82l-31.03-10.74,14.35-29.53c-5.46-5.46-5.41-5.41-10.88-10.88l-29.53,14.35L83.2,0c-7.73,0-7.65,0-15.38,0l-10.74,31.03-29.53-14.35c-5.46,5.46-5.41,5.41-10.88,10.88l14.35,29.53L0,67.82c0,7.73,0,7.65,0,15.38l31.03,10.74-14.35,29.53c5.46,5.46,5.41,5.41,10.88,10.88l29.53-14.35,10.74,31.03c7.73,0,7.65,0,15.38,0l10.74-31.03,29.53,14.35c5.46-5.46,5.41-5.41,10.88-10.88l-14.35-29.53,31.03-10.74c0-7.73,0-7.65,0-15.38Z"/>
+            <path fill="#ededf2" d="M83.76,59.35v14.98h-48.7v2.38h48.7v14.98l26.44-9.15v-14.03l-26.44-9.15Z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// --- [화면 2] IntroStep ---
+const IntroStep = ({ onNext, isEditMode, scrollY }) => {
+  const s = scrollY || 0;
+  const opacity1 = Math.max(0, Math.min(1, 1 - s / 2160));
+  const opacity2 = s < 2160 
+    ? Math.max(0, Math.min(1, s / 2160))
+    : Math.max(0, Math.min(1, 1 - (s - 2160) / 2160));
+  const opacity3 = Math.max(0, Math.min(1, (s - 2160) / 2160));
+
+  return (
+    <div className="w-full flex flex-col bg-[#b7b7bc] text-[#575759] selection:bg-[#575759]/10">
+      
+      {/* SECTION 1: 2페이지 1 */}
+      <section className="w-[1620px] h-[2160px] relative shrink-0" style={{ opacity: opacity1, transition: 'opacity 0.1s ease-out' }}>
+        {/* Header Logo */}
+        <div style={{ position: 'absolute', left: '752.12px', top: '60px', width: '115.77px', height: '23.87px' }}>
+          <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 115.77 23.84" className="w-full h-full select-none pointer-events-none">
+            <defs>
+              <style>
+                {`.cls-1 { fill: #575759; stroke-width: 0px; }`}
+              </style>
+            </defs>
+            <path className="cls-1" d="M70.45,1.71l-.77-.27.36-.73-.27-.27-.73.36-.27-.77h-.38l-.27.77-.73-.36-.27.27.36.73-.77.27v.38l.77.27-.36.73c.14.14.13.13.27.27l.73-.36.27.77h.38l.27-.77.73.36c.14-.14.13-.13.27-.27l-.36-.73.77-.27v-.38Z"/>
+            <path className="cls-1" d="M28.32,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C30.5,4.34,28.03.38,22.69,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88.17,4.51,3.21,10.66,11.24,10.66,6.93,0,10.06-5.29,10.28-6.17M14.04,9.52c.17-2.03,2.61-6.24,7.26-6.39,6.33,0,7.26,5.11,7.26,6.39h-14.51Z"/>
+            <path className="cls-1" d="M111.79,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C113.98,4.34,111.5.38,106.16,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88s3.21,10.66,11.24,10.66,10.06-5.29,10.28-6.17M97.51,9.52c.17-2.03,2.61-6.24,7.26-6.39,6.33,0,7.26,5.11,7.26,6.39h-14.51Z"/>
+            <rect className="cls-1" x="66.69" y="6.47" width="3.76" height="17.37"/>
+            <path className="cls-1" d="M83,0C80.01,0,78.33,1.55,77.33,2.53V0h-3.76v23.84h3.76v-13c0-3.82,1.62-7.71,6.14-7.71,3.46,0,4.76,3.4,4.76,7.85v12.86h3.76v-12.86C91.98,1.27,86.37,0,83,0Z"/>
+            <path className="cls-1" d="M56.41,0c-2.88,0-5.17,1.9-6.02,4.02C48.63.61,46.34,0,44.04,0,42.08,0,40.21,1.3,39.2,2.86V0h-3.76v23.84h3.76v-15.15c0-2.93,2.18-5.55,4.87-5.55,2.24,0,3.57,2.03,3.57,5.55v15.15h3.76v-15.15c0-2.42,2.06-5.55,4.59-5.55s3.8,2.16,3.8,5.55v15.15h3.76v-12.86C63.55,9.19,63.97,0,56.41,0Z"/>
+            <path className="cls-1" d="M10.33.59c-.69-.2-1.4-.31-2.12-.31-1.84,0-3.57,1.2-4.44,2.78V0H0v23.84h3.76v-13.64c0-4.21,2.51-5.77,4.7-6.23.6-.13,1.23-.08,1.86.09V.59Z"/>
+          </svg>
+        </div>
+
+        {/* Character Image */}
+        <object 
+          type="image/svg+xml" 
+          data="디자인!/캐릭터1.svg?v=5" 
+          width="1456"
+          height="1583"
+          style={{ position: 'absolute', left: '80.82px', top: '80.4653px', width: '1455.65px', height: '1583.00px' }}
+          className="pointer-events-none select-none"
+        />
+
+        {/* Text Block */}
+        <div style={{ position: 'absolute', left: '70px', top: '1680px', width: '1480px' }} className="text-left text-[#575759]">
+          <p className="text-[35pt] font-normal leading-[1.4] break-keep font-['Presentation']">
+            안녕하세요 저는 <strong className="font-semibold">도리</strong>예요<br/>
+            스타일을 찾으러 오신 여러분을 환영해요<br/>
+            저는 여러분이 여러분만의 스타일을 발견하고<br/>
+            찾아갈 수 있도록 도와드릴 거예요<br/>
+            우선 과정을 한 번 설명드릴게요
+          </p>
+        </div>
+      </section>
+
+      {/* SECTION 2: 2페이지 2 */}
+      <section className="w-[1620px] h-[2160px] relative shrink-0" style={{ opacity: opacity2, transition: 'opacity 0.1s ease-out' }}>
+
+        {/* Text Block */}
+        <div style={{ position: 'absolute', left: '70px', top: '250px', width: '1480px' }} className="text-left text-[#575759]">
+          <p className="text-[35pt] font-normal leading-[1.4] break-keep font-['Presentation']">
+            먼저 제가 총 <strong className="font-semibold">8가지 기본 스타일</strong>을 준비했어요<br/>
+            여러분은 8가지 스타일을 탐색해본 후,<br/>
+            가장 <strong className="font-semibold">마음에 드는 스타일을 선택</strong>해주시면 돼요
+          </p>
+        </div>
+
+        {/* Character Image */}
+        <img 
+          src="디자인!/바꿔캐릭터2.PNG" 
+          alt="캐릭터2"
+          style={{ 
+            position: 'absolute', 
+            left: '401.8877px', 
+            bottom: '187.89px', 
+            width: '1411.2399px', 
+            height: 'auto', 
+            objectFit: 'contain' 
+          }}
+          className="pointer-events-none select-none"
+        />
+      </section>
+
+      {/* SECTION 3: 2페이지 3 */}
+      <section className="w-[1620px] h-[2160px] relative shrink-0" style={{ opacity: opacity3, transition: 'opacity 0.1s ease-out' }}>
+
+        {/* Top text block */}
+        <div style={{ position: 'absolute', left: '70px', top: '189px', width: '1480px' }} className="text-left text-[#575759]">
+          <p className="text-[35pt] font-normal leading-[1.4] break-keep font-['Presentation']">
+            스타일 선택이 끝난 후에는<br/>
+            <strong className="font-semibold">해당 스타일로 커스텀</strong>하는 과정을 거칠 거예요<br/>
+            이 단계를 위해 돕기 위해<br/>
+            저랑 똑같이 생긴 <strong className="font-semibold">오브제 도디</strong>를 만들었어요<br/>
+            도디는 아무런 스타일이 없는 상태예요<br/>
+            여러분이 직접 스타일을 입혀보며,<br/>
+            <strong className="font-semibold">여러분만의 도디를 만들어 볼 거예요</strong><br/>
+            도디를 다 만드시면, 제가 <strong className="font-semibold">간단한 해석을 드릴게요</strong><br/>
+            <strong className="font-semibold">시작해 볼까요?</strong>
+          </p>
+        </div>
+        
+        {/* Middle SVG block */}
+        <object 
+          type="image/svg+xml" 
+          data="디자인!/캐릭터3.svg?v=5" 
+          width="1411"
+          height="1409"
+          style={{ 
+            position: 'absolute', 
+            left: '-64.19px', 
+            top: '783.1799px', 
+            width: '1410.99px', 
+            height: '1409.42px' 
+          }}
+          className="pointer-events-none select-none"
+        />
+
+        {/* Next Button (Next SVG with octagon #ededf2, arrow #575759) */}
+        <div 
+          style={{
+            position: 'absolute',
+            bottom: '106.6109px',
+            right: '91.2582px',
+            width: '151.0284px',
+            height: '151.0284px',
+            zIndex: 100
+          }}
+        >
+          <button 
+            type="button" 
+            onClick={onNext} 
+            className="transition-all active:scale-95 hover:opacity-90 cursor-pointer pointer-events-auto border-none bg-transparent p-0 w-full h-full"
+          >
+            <svg viewBox="0 0 151.03 151.03" className="w-full h-full">
+              <path fill="#ededf2" d="M151.03,67.82l-31.03-10.74,14.35-29.53c-5.46-5.46-5.41-5.41-10.88-10.88l-29.53,14.35L83.2,0c-7.73,0-7.65,0-15.38,0l-10.74,31.03-29.53-14.35c-5.46,5.46-5.41,5.41-10.88,10.88l14.35,29.53L0,67.82c0,7.73,0,7.65,0,15.38l31.03,10.74-14.35,29.53c5.46,5.46,5.41,5.41,10.88,10.88l29.53-14.35,10.74,31.03c7.73,0,7.65,0,15.38,0l10.74-31.03,29.53,14.35c5.46-5.46,5.41-5.41,10.88-10.88l-14.35-29.53,31.03-10.74c0-7.73,0-7.65,0-15.38Z"/>
+              <path fill="#575759" d="M83.76,59.35v14.98h-48.7v2.38h48.7v14.98l26.44-9.15v-14.03l-26.44-9.15Z"/>
+            </svg>
+          </button>
+        </div>
+      </section>
+      
+    </div>
+  );
+};
+// --- [화면 3] MoodStep ---
+const MoodStep = ({ moods, scrollY, textData, onTextUpdate, onMoodClick, onMoodSwipe, toggleLike, handleFileUpload, onBackToStart, showGridOnly, isEditMode, userName, layoutHeight }) => {
+  const lh = layoutHeight || 2160;
+  const s = showGridOnly ? lh : (scrollY || 0);
+  const opacity1 = showGridOnly ? 0 : Math.max(0, Math.min(1, 1 - s / lh));
+  const opacity2 = showGridOnly ? 1 : Math.max(0, Math.min(1, s / lh));
+
+  const [draggedSlice, setDraggedSlice] = useState({ id: null, tx: 0, ty: 0, opacity: 1 });
+  const [pressedSliceId, setPressedSliceId] = useState(null);
+  const lastTapRef = useRef({ id: null, time: 0 });
+  const touchStartRef = useRef(null);
+
+  const handleSliceClick = (mood) => {
+    const now = Date.now();
+    const timeDiff = now - lastTapRef.current.time;
+    if (lastTapRef.current.id === mood.id && timeDiff < 350) {
+      setPressedSliceId(mood.id);
+      setTimeout(() => {
+        onMoodClick(mood);
+        setPressedSliceId(null);
+      }, 300);
+      lastTapRef.current = { id: null, time: 0 };
+    } else {
+      lastTapRef.current = { id: mood.id, time: now };
+    }
+  };
+
+  const handleTouchStart = (e, moodId) => {
+    const touch = e.touches ? e.touches[0] : e;
+    const svgObj = e.currentTarget.viewportElement || e.currentTarget;
+    const rect = svgObj.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    const startX = touch.clientX;
+    const startY = touch.clientY;
+    const startDist = Math.sqrt((startX - centerX)**2 + (startY - centerY)**2);
+    
+    touchStartRef.current = {
+      moodId,
+      startX,
+      startY,
+      startDist,
+      centerX,
+      centerY
+    };
+    
+    setDraggedSlice({ id: moodId, tx: 0, ty: 0, opacity: 1 });
+  };
+
+  const handleTouchMove = (e) => {
+    if (!touchStartRef.current) return;
+    
+    const touch = e.touches ? e.touches[0] : e;
+    const { moodId, startX, startY, startDist, centerX, centerY } = touchStartRef.current;
+    
+    const endX = touch.clientX;
+    const endY = touch.clientY;
+    
+    const endDist = Math.sqrt((endX - centerX)**2 + (endY - centerY)**2);
+    const dragDist = Math.sqrt((endX - startX)**2 + (endY - startY)**2);
+    
+    if (endDist > startDist && dragDist > 5) {
+      let vx = 0;
+      let vy = 0;
+      
+      // Lock drag vector to mathematically perfect radial angles for all 8 slices
+      if (moodId === 8) { // 01 Exotic (0 degrees)
+        vx = 0; vy = -1;
+      } else if (moodId === 2) { // 02 Romantic (45 degrees)
+        vx = 0.7071; vy = -0.7071;
+      } else if (moodId === 3) { // 03 Elegance (90 degrees)
+        vx = 1; vy = 0;
+      } else if (moodId === 1) { // 04 Sophisticated (135 degrees)
+        vx = 0.7071; vy = 0.7071;
+      } else if (moodId === 6) { // 05 Modern (180 degrees)
+        vx = 0; vy = 1;
+      } else if (moodId === 7) { // 06 Minimal (225 degrees)
+        vx = -0.7071; vy = 0.7071;
+      } else if (moodId === 4) { // 07 Active (270 degrees)
+        vx = -1; vy = 0;
+      } else if (moodId === 5) { // 08 Country (315 degrees)
+        vx = -0.7071; vy = -0.7071;
+      }
+      
+      const DAMPING = 0.65; // Damped motion: follows slightly slower than the finger
+      const effectiveDist = dragDist * DAMPING;
+      const tx = vx * effectiveDist;
+      const ty = vy * effectiveDist;
+      const normalizedDist = Math.min(1, effectiveDist / 200);
+      const opacity = Math.max(0, 1 - Math.pow(normalizedDist, 2.2));
+      
+      setDraggedSlice({ id: moodId, tx, ty, opacity });
+    }
+  };
+
+  const handleTouchEnd = (e, mood) => {
+    if (!touchStartRef.current || touchStartRef.current.moodId !== mood.id) return;
+    
+    const touch = e.changedTouches ? e.changedTouches[0] : e;
+    const endX = touch.clientX;
+    const endY = touch.clientY;
+    const { startX, startY, startDist, centerX, centerY } = touchStartRef.current;
+    
+    const endDist = Math.sqrt((endX - centerX)**2 + (endY - centerY)**2);
+    const dragDist = Math.sqrt((endX - startX)**2 + (endY - startY)**2);
+    
+    touchStartRef.current = null;
+    
+    const DAMPING = 0.65;
+    const effectiveDist = dragDist * DAMPING;
+    
+    // Trigger styling transition only after dragging far outward until near-transparency
+    if (effectiveDist >= 170 && endDist > startDist) {
+      if (onMoodSwipe) {
+        onMoodSwipe(mood);
+      }
+    }
+    
+    setDraggedSlice({ id: null, tx: 0, ty: 0, opacity: 1 });
+  };
+
+  const handleTouchCancel = () => {
+    touchStartRef.current = null;
+    setDraggedSlice({ id: null, tx: 0, ty: 0, opacity: 1 });
+  };
+
+  const svgRef = useRef(null);
+
+  useEffect(() => {
+    const svgEl = svgRef.current;
+    if (!svgEl) return;
+
+    const handleTouchStartRaw = (e) => {
+      const pathEl = e.target.closest('path');
+      if (!pathEl) return;
+      
+      const moodIdAttr = pathEl.getAttribute('data-mood-id');
+      if (!moodIdAttr) return;
+      const moodId = parseInt(moodIdAttr, 10);
+      
+      handleTouchStart(e, moodId);
+    };
+
+    const handleTouchMoveRaw = (e) => {
+      if (touchStartRef.current) {
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+        handleTouchMove(e);
+      }
+    };
+
+    const handleTouchEndRaw = (e) => {
+      if (touchStartRef.current) {
+        const moodId = touchStartRef.current.moodId;
+        const mood = moods.find(m => m.id === moodId);
+        if (mood) {
+          handleTouchEnd(e, mood);
+        }
+      }
+    };
+
+    svgEl.addEventListener('touchstart', handleTouchStartRaw, { passive: false });
+    svgEl.addEventListener('touchmove', handleTouchMoveRaw, { passive: false });
+    svgEl.addEventListener('touchend', handleTouchEndRaw, { passive: false });
+
+    return () => {
+      svgEl.removeEventListener('touchstart', handleTouchStartRaw);
+      svgEl.removeEventListener('touchmove', handleTouchMoveRaw);
+      svgEl.removeEventListener('touchend', handleTouchEndRaw);
+    };
+  }, [moods]);
+
+  return (
+    <div className={`w-[1620px] bg-[#ededf2] text-[#575759] selection:bg-[#575759]/10 relative overflow-x-hidden`} style={{ height: showGridOnly ? `${lh}px` : 'auto', minHeight: showGridOnly ? 'none' : `${lh * 2}px`, overflow: showGridOnly ? 'hidden' : 'visible' }}>
+      <style>{`
+        @keyframes heart-pop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } } 
+        .animate-heart-pop { animation: heart-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        
+        @keyframes slice-press {
+          0% { transform: scale(1); filter: brightness(1); }
+          45% { transform: scale(0.972); filter: brightness(1.06); }
+          100% { transform: scale(1); filter: brightness(1); }
+        }
+        .animate-slice-press {
+          animation: slice-press 0.42s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+          transform-origin: 696.8px 696.8px !important;
+        }
+      `}</style>
+
+      {/* ==================== SLIDE 1: 선택1 ==================== */}
+      {!showGridOnly && (
+        <section 
+          className="w-[1620px] absolute left-0 top-0 pointer-events-none" 
+          style={{ height: `${lh}px`, opacity: opacity1, transition: 'opacity 0.1s ease-out' }}
+        >
+          {/* Header: Chapter 01. 스타일 탐색 */}
+          <div style={{ position: 'absolute', left: '70px', top: '73px', width: '300px', height: '30px' }} className="text-left">
+            <span className="text-[18px] font-bold tracking-[0.05em] text-[#575759]">Chapter 01. 스타일 탐색</span>
+          </div>
+
+          {/* Big Left Title */}
+          <div style={{ position: 'absolute', left: '70px', top: '267px', width: '1200px' }} className="text-left text-[#575759]">
+            <p className="break-keep" style={{ fontSize: '100pt', fontWeight: 600, lineHeight: 1.25 }}>
+              {userName}님은<br/>
+              어떤 스타일이<br/>
+              가장 마음에 드시나요?
+            </p>
+          </div>
+
+          {/* Center-Right stylized asterisk drawing */}
+          <object
+            type="image/svg+xml"
+            data="디자인!/심볼 선.svg?v=1"
+            width="560"
+            height="560"
+            className="pointer-events-none select-none absolute"
+            style={{ position: 'absolute', left: '882px', top: '1047.5634px', width: '560px', height: '560px' }}
+          />
+
+          {/* Bottom-Left instructions */}
+          <div style={{ position: 'absolute', left: '70px', top: '1530px', width: '1250px' }} className="text-left text-[#575759]">
+            <p className="font-normal break-keep font-['Presentation']" style={{ fontSize: '35pt', lineHeight: '1.4', fontWeight: 400 }}>
+              아래로 스크롤하시면<br/>
+              8가지 조각을 보실 수 있습니다<br/>
+              각 조각들을 두 번 터치하여<br/>
+              스타일을 탐색해보세요<br/>
+              가장 마음에 드는 스타일 조각을<br/>
+              바깥으로 밀면 커스텀이 시작됩니다
+            </p>
+          </div>
+        </section>
+      )}
+
+      {/* ==================== SLIDE 2: 선택2 ==================== */}
+      <section 
+        className="w-[1620px] absolute left-0" 
+        style={{ 
+          height: `${lh}px`,
+          top: showGridOnly ? '0px' : `${lh}px`,
+          opacity: opacity2, 
+          transition: 'opacity 0.1s ease-out',
+          pointerEvents: opacity2 > 0.1 ? 'auto' : 'none'
+        }}
+      >
+
+
+        {/* Center Content: Center-aligned SVG octagon with interactive paths */}
+        <div style={{ position: 'absolute', left: '113.2px', top: `${(lh - 1393.61) / 2}px`, width: '1393.61px', height: '1393.61px' }}>
+          <svg
+            ref={svgRef}
+            viewBox="0 0 1393.61 1393.61"
+            className="w-full h-full select-none absolute top-0 left-0"
+            style={{ zIndex: 10, overflow: 'visible' }}
+            onMouseMove={handleTouchMove}
+            onTouchMove={handleTouchMove}
+            onMouseLeave={handleTouchCancel}
+          >
+            <defs>
+              <style>{`
+                @font-face {
+                  font-family: 'Freesentation';
+                  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-4Regular.woff2') format('woff2');
+                  font-weight: 400;
+                  font-style: normal;
+                }
+                @font-face {
+                  font-family: 'Freesentation';
+                  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-8ExtraBold.woff2') format('woff2');
+                  font-weight: 800;
+                  font-style: normal;
+                }
+              `}</style>
+              <clipPath id="clippath"><path fill="none" d="M719.74,673.87l395.73-163.92,124.22-255.68c-50.42-50.42-49.94-49.94-100.36-100.36l-255.68,124.22-163.92,395.73Z" /></clipPath>
+              <clipPath id="clippath-1"><path fill="none" d="M664.37,696.8l-395.72-163.91L0,625.84c0,71.31,0,70.64,0,141.92l268.63,92.96,395.73-163.92Z" /></clipPath>
+              <clipPath id="clippath-2"><path fill="none" d="M673.87,673.87l-163.91-395.72-255.69-124.24c-50.42,50.42-49.93,49.93-100.36,100.36l124.23,255.68,395.73,163.92Z" /></clipPath>
+              <clipPath id="clippath-3"><path fill="none" d="M1124.97,532.89l-395.73,163.92,395.73,163.91,268.64-92.95c0-71.31,0-70.62,0-141.92l-268.63-92.96Z" /></clipPath>
+              <clipPath id="clippath-4"><path fill="none" d="M696.8,664.37l163.92-395.73L767.76,0c-71.29,0-70.62,0-141.92,0l-92.95,268.64,163.92,395.73Z" /></clipPath>
+              <clipPath id="clippath-5"><path fill="none" d="M719.74,719.74l163.92,395.73,255.68,124.23c50.43-50.43,49.94-49.94,100.36-100.36l-124.24-255.69-395.72-163.91Z" /></clipPath>
+              <clipPath id="clippath-6"><path fill="none" d="M673.87,719.74l-395.73,163.92-124.22,255.68c50.42,50.42,49.94,49.94,100.36,100.36l255.68-124.23,163.91-395.72Z" /></clipPath>
+              <clipPath id="clippath-7"><path fill="none" d="M696.8,729.24l-163.92,395.73,92.96,268.63c71.3,0,70.62,0,141.92,0l92.95-268.64-163.91-395.72Z" /></clipPath>
+            </defs>
+
+            {/* Interactive Groups (Images + Dark Overlay + Numbers + Labels + Touch Paths) */}
+            {[
+              { id: 2, name: '로맨틱', d: 'M719.74,673.87l395.73-163.92,124.22-255.68c-50.42-50.42-49.94-49.94-100.36-100.36l-255.68,124.22-163.92,395.73Z', clip: 'clippath', img_transform: 'translate(1100.46 14.89) rotate(47.09) scale(.22)', img_href: 'mood_slice_1.jpeg', num: '02', num_trans: 'translate(966.89 411.75)', lbl: '로맨틱한', lbl_trans: 'translate(951.56 460.02)' },
+              { id: 4, name: '액티브한', d: 'M664.37,696.8l-395.72-163.91L0,625.84c0,71.31,0,70.64,0,141.92l268.63,92.96,395.73-163.92Z', clip: 'clippath-1', img_transform: 'translate(674.37 508.5) rotate(90) scale(.22)', img_href: 'mood_slice_2.jpeg', num: '07', num_trans: 'translate(251.1 714.91)', lbl: '액티브한', lbl_trans: 'translate(235.7 762.24)' },
+              { id: 5, name: '소박한', d: 'M673.87,673.87l-163.91-395.72-255.69-124.24c-50.42,50.42-49.93,49.93-100.36,100.36l124.23,255.68,395.73,163.92Z', clip: 'clippath-2', img_transform: 'translate(860.72 552.55) rotate(135) scale(.22)', img_href: 'mood_slice_3.jpeg', num: '08', num_trans: 'translate(366.44 411.75)', lbl: '소박한', lbl_trans: 'translate(361.1 460.02)' },
+              { id: 3, name: '우아한', d: 'M1124.97,532.89l-395.73,163.92,395.73,163.91,268.64-92.95c0-71.31,0-70.62,0-141.92l-268.63-92.96Z', clip: 'clippath-3', img_transform: 'translate(1393.61 493.1) rotate(90) scale(.22)', img_href: 'mood_slice_4.jpeg', num: '03', num_trans: 'translate(1098.68 714.91)', lbl: '우아한', lbl_trans: 'translate(1093.53 762.24)' },
+              { id: 8, name: '이국적인', d: 'M696.8,664.37l163.92-395.73L767.76,0c-71.29,0-70.62,0-141.92,0l-92.95,268.64,163.92,395.73Z', clip: 'clippath-4', img_transform: 'translate(485.57 -61.29) scale(.22)', img_href: 'mood_slice_5.jpeg', num: '01', num_trans: 'translate(671.6 309.21)', lbl: '이국적인', lbl_trans: 'translate(652 352.92)' },
+              { id: 1, name: '지적인', d: 'M719.74,719.74l163.92,395.73,255.68,124.23c50.43-50.43,49.94-49.94,100.36-100.36l-124.24-255.69-395.72-163.91Z', clip: 'clippath-5', img_transform: 'translate(545.42 862.52) rotate(-45) scale(.22)', img_href: 'mood_slice_6.jpeg', num: '04', num_trans: 'translate(966.64 1007.54)', lbl: '지적인', lbl_trans: 'translate(962.82 1056.55)' },
+              { id: 7, name: '미니멀한', d: 'M673.87,719.74l-395.73,163.92-124.22,255.68c50.42,50.42,49.94,49.94,100.36,100.36l255.68-124.23,163.91-395.72Z', clip: 'clippath-6', img_transform: 'translate(546.07 547.96) rotate(45) scale(.22)', img_href: 'mood_slice_7.jpeg', num: '06', num_trans: 'translate(366.31 1007.54)', lbl: '미니멀한', lbl_trans: 'translate(349.19 1056.55)' },
+              { id: 6, name: '모던한', d: 'M696.8,729.24l-163.92,395.73,92.96,268.63c71.3,0,70.62,0,141.92,0l92.95-268.64-163.91-395.72Z', clip: 'clippath-7', img_transform: 'translate(485.57 696.81) scale(.22)', img_href: 'mood_slice_8.jpeg', num: '05', num_trans: 'translate(668.15 1111.22)', lbl: '모던한', lbl_trans: 'translate(662.81 1159.64)' }
+            ].map(slice => {
+              const mood = moods.find(m => m.id === slice.id);
+              const isDragged = draggedSlice.id === slice.id;
+              const isPressed = pressedSliceId === slice.id;
+              
+              return (
+                <g
+                  key={slice.id}
+                  className={isPressed ? 'animate-slice-press' : ''}
+                  style={{
+                    transform: isDragged 
+                      ? `translate(${draggedSlice.tx}px, ${draggedSlice.ty}px)` 
+                      : (isPressed ? undefined : 'translate(0px, 0px) scale(1)'),
+                    opacity: isDragged ? draggedSlice.opacity : 1,
+                    transition: isDragged ? 'none' : (isPressed ? 'none' : 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1)'),
+                    transformOrigin: '696.8px 696.8px'
+                  }}
+                >
+                  {/* Clipped image for this slice */}
+                  <g clipPath={`url(#${slice.clip})`}>
+                    <image
+                      width="1881"
+                      height="3344"
+                      transform={slice.img_transform}
+                      href={`디자인!/${slice.img_href}`}
+                    />
+                  </g>
+
+                  {/* Dark overlay for text readability (matches the original SVG class cls-13 / cls-5) */}
+                  <path
+                    d={slice.d}
+                    fill="#221f1f"
+                    style={{ opacity: 0.3 }}
+                  />
+
+                  {/* Number label */}
+                  <text
+                    transform={slice.num_trans}
+                    style={{
+                      fill: '#f2f0f0',
+                      fontFamily: 'Freesentation',
+                      fontSize: '50px',
+                      fontWeight: 800
+                    }}
+                  >
+                    {slice.num}
+                  </text>
+
+                  {/* Text Label */}
+                  <text
+                    transform={slice.lbl_trans}
+                    style={{
+                      fill: '#f2f0f0',
+                      fontFamily: 'Freesentation',
+                      fontSize: '30px',
+                      fontWeight: 400
+                    }}
+                  >
+                    {slice.lbl}
+                  </text>
+
+                  {/* Transparent Interactive touch/hover path */}
+                  <path
+                    d={slice.d}
+                    data-mood-id={slice.id}
+                    onClick={() => mood && handleSliceClick(mood)}
+                    onMouseDown={(e) => mood && handleTouchStart(e, slice.id)}
+                    onMouseUp={(e) => mood && handleTouchEnd(e, mood)}
+                    onTouchStart={(e) => mood && handleTouchStart(e, slice.id)}
+                    onTouchEnd={(e) => mood && handleTouchEnd(e, mood)}
+                    className="cursor-pointer pointer-events-auto fill-transparent hover:fill-black/[0.05] active:fill-black/[0.1]"
+                  />
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+
+        {/* Back to start link (Edit Mode Only) */}
+        {isEditMode && (
+          <div style={{ position: 'absolute', left: '0px', top: `${lh - 310}px`, width: '1620px' }} className="flex justify-center">
+            <button type="button" onClick={onBackToStart} className="text-[#b7b7bc] hover:text-[#575759] transition-colors underline underline-offset-4 decoration-1 font-sans text-sm text-center">처음으로 돌아가기</button>
+          </div>
+        )}
+
+        {/* Centered Footer: SVG logo */}
+        <div style={{ position: 'absolute', left: '752.12px', top: `${lh - 90}px`, width: '115.77px', height: '23.87px' }} className="select-none pointer-events-none">
+          <object
+            type="image/svg+xml"
+            data="디자인!/로고.svg"
+            width="115.77"
+            height="23.87"
+            className="w-full h-full"
+          />
+        </div>
+      </section>
+    </div>
+  );
+};
+
+// --- [화면 4] MoodDetailView ---
+const MoodDetailView = ({ mood, layoutHeight, onBack }) => {
+  if (!mood) return null;
+
+  const containerRef = useRef(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const dragOffsetRef = useRef({ x: 0, y: 0 });
+  const touchStartPos = useRef({ x: 0, y: 0 });
+  const hasTriggered = useRef(false);
+
+  // Keep dragOffsetRef in sync with dragOffset state to avoid re-binding touch listeners during drags
+  useEffect(() => {
+    dragOffsetRef.current = dragOffset;
+  }, [dragOffset]);
+
+  useEffect(() => {
+    const rootEl = document.getElementById('root');
+    const originalOverflow = rootEl ? rootEl.style.overflow : '';
+    const originalRootBg = rootEl ? rootEl.style.backgroundColor : '';
+    const originalBodyBg = document.body.style.backgroundColor;
+    const originalHtmlBg = document.documentElement.style.backgroundColor;
+    
+    if (rootEl) {
+      rootEl.style.overflow = 'hidden';
+      rootEl.style.backgroundColor = 'transparent';
+      rootEl.scrollTop = 0;
+      // Overwrite any browser automatic scroll-restoration behaviors
+      setTimeout(() => { if (rootEl) rootEl.scrollTop = 0; }, 20);
+      setTimeout(() => { if (rootEl) rootEl.scrollTop = 0; }, 100);
+      setTimeout(() => { if (rootEl) rootEl.scrollTop = 0; }, 300);
+    }
+    document.body.style.backgroundColor = 'transparent';
+    document.documentElement.style.backgroundColor = 'transparent';
+
+    return () => {
+      if (rootEl) {
+        rootEl.style.overflow = originalOverflow || 'auto';
+        rootEl.style.backgroundColor = originalRootBg || '#ffffff';
+      }
+      document.body.style.backgroundColor = originalBodyBg || '#ffffff';
+      document.documentElement.style.backgroundColor = originalHtmlBg || '';
+    };
+  }, []);
+
+  // Track swipe gestures in any direction to trigger navigate back to Page 3 on finger release (touchend)
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    
+    const handleTouchStart = (e) => {
+      if (e.touches.length > 0) {
+        touchStartPos.current = {
+          x: e.touches[0].clientX,
+          y: e.touches[0].clientY
+        };
+        hasTriggered.current = false;
+      }
+    };
+
+    const handleTouchMove = (e) => {
+      if (e.touches.length > 0 && !hasTriggered.current) {
+        const dx = e.touches[0].clientX - touchStartPos.current.x;
+        const dy = e.touches[0].clientY - touchStartPos.current.y;
+        
+        // Scale conversion with damping (0.65x) so the moodboard moves slightly slower than the finger
+        const scale = getAppScale();
+        const DAMPING = 0.65;
+        const dxContainer = (dx / scale) * DAMPING;
+        const dyContainer = (dy / scale) * DAMPING;
+
+        setDragOffset({ x: dxContainer, y: dyContainer });
+      }
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+    };
+
+    const handleTouchEnd = () => {
+      if (!hasTriggered.current) {
+        const finalOffset = dragOffsetRef.current;
+        const distance = Math.sqrt(finalOffset.x * finalOffset.x + finalOffset.y * finalOffset.y);
+        
+        if (distance > 130) { // Scaled threshold matching the 0.65 damping
+          hasTriggered.current = true;
+          onBack();
+        } else {
+          // Snap back to center and restore opacity to 1
+          setDragOffset({ x: 0, y: 0 });
+        }
+      }
+    };
+    
+    el.addEventListener('touchstart', handleTouchStart, { passive: false });
+    el.addEventListener('touchmove', handleTouchMove, { passive: false });
+    el.addEventListener('touchend', handleTouchEnd, { passive: false });
+    
+    return () => {
+      el.removeEventListener('touchstart', handleTouchStart);
+      el.removeEventListener('touchmove', handleTouchMove);
+      el.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [onBack]);
+  
+  const getMoodboardImage = (moodId) => {
+    const map = {
+      8: '디자인!/무보1.jpg', // 01 이국적인
+      2: '디자인!/무보2.jpg', // 02 로맨틱한
+      3: '디자인!/무보3.jpg', // 03 우아한
+      1: '디자인!/바꿔4최종.jpg', // 04 지적인
+      6: '디자인!/무보5.jpg', // 05 모던한
+      7: '디자인!/무보6.jpg', // 06 미니멀한
+      4: '디자인!/무보7.jpg', // 07 활동적인
+      5: '디자인!/무보8.jpg'  // 08 소박한
+    };
+    return map[moodId] || '';
+  };
+
+  const imageSrc = getMoodboardImage(mood.id);
+
+  const distance = Math.sqrt(dragOffset.x * dragOffset.x + dragOffset.y * dragOffset.y);
+  
+  // Slower, smoother, more gradual fade during drag
+  const normalizedDistance = Math.min(1, distance / 220);
+  const opacity = Math.max(0, 1 - Math.pow(normalizedDistance, 2.5));
+
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        position: 'relative',
+        width: '1620px',
+        height: `${layoutHeight}px`, // Explicit subpixel height to prevent layout calculation mismatch
+        overflow: 'hidden', // Clip exactly to the page container
+        backgroundColor: 'transparent',
+        margin: 0,
+        padding: 0,
+        opacity: opacity,
+        transition: (dragOffset.x === 0 && dragOffset.y === 0) ? 'opacity 0.3s ease-out' : 'none'
+      }}
+    >
+      {/* Moodboard Image mapped exactly to the 1620x2160 container bounds (no cutoff or offsets) */}
+      {imageSrc && (
+        <img
+          src={imageSrc}
+          alt={`${mood.name} Moodboard`}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'fill',
+            display: 'block',
+            border: 'none',
+            margin: 0,
+            padding: 0,
+            pointerEvents: 'none',
+            userSelect: 'none',
+            transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)`,
+            transition: (dragOffset.x === 0 && dragOffset.y === 0) ? 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)' : 'none'
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+// --- [화면 4 하위 컴포넌트] DraggableItem (업그레이드: 자유로운 배치 및 테두리 제거) ---
+const DraggableItem = ({ item, updateItem, deleteItem, isEditMode }) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+  
+  const onMouseDownMove = (e) => { 
+    if (!isEditMode) return;
+    if (e.target.closest('.resize-handle') || e.target.tagName === 'TEXTAREA' || e.target.closest('.delete-btn')) return; 
+    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+    setIsDragging(true); 
+    const scale = getAppScale();
+    setStartPos({ x: clientX - item.x * scale, y: clientY - item.y * scale }); 
+  };
+  
+  const onMouseDownResize = (e) => { 
+    if (!isEditMode) return;
+    e.stopPropagation(); 
+    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+    setIsResizing(true); 
+    const scale = getAppScale();
+    setStartPos({ x: clientX, y: clientY, w: item.width, h: item.height }); 
+  };
+
+  useEffect(() => {
+    const onMouseMove = (e) => { 
+      const clientX = e.type.includes('touch') ? (e.touches[0] ? e.touches[0].clientX : e.changedTouches[0].clientX) : e.clientX;
+      const clientY = e.type.includes('touch') ? (e.touches[0] ? e.touches[0].clientY : e.changedTouches[0].clientY) : e.clientY;
+      const scale = getAppScale();
+      if (isDragging) { 
+        updateItem(item.id, { x: (clientX - startPos.x) / scale, y: (clientY - startPos.y) / scale }); 
+      } 
+      if (isResizing) { 
+        const deltaX = clientX - startPos.x; 
+        const deltaY = clientY - startPos.y; 
+        updateItem(item.id, { width: Math.max(50, startPos.w + deltaX / scale), height: Math.max(30, startPos.h + deltaY / scale) }); 
+      } 
+    };
+    const onMouseUp = () => { setIsDragging(false); setIsResizing(false); };
+    if (isDragging || isResizing) { 
+      window.addEventListener('mousemove', onMouseMove); 
+      window.addEventListener('mouseup', onMouseUp); 
+      window.addEventListener('touchmove', onMouseMove, { passive: false });
+      window.addEventListener('touchend', onMouseUp);
+    }
+    return () => { 
+      window.removeEventListener('mousemove', onMouseMove); 
+      window.removeEventListener('mouseup', onMouseUp); 
+      window.removeEventListener('touchmove', onMouseMove);
+      window.removeEventListener('touchend', onMouseUp);
+    };
+  }, [isDragging, isResizing, startPos, item.id, updateItem]);
+
+  // 텍스트가 아닌 경우(사진/영상) 배경색과 테두리를 없애서 자유로운 느낌을 줌
+  const containerClass = `group absolute select-none touch-none transition-shadow ${isDragging ? 'z-[100]' : 'z-50'} ${
+    item.type === 'text' ? 'bg-white shadow-lg border-2 border-gray-100 rounded-2xl' : ''
+  } ${isDragging ? 'shadow-2xl scale-[1.01]' : ''}`;
+
+  return (
+    <div style={{ left: item.x, top: item.y, width: item.width, height: item.height }} onMouseDown={onMouseDownMove} onTouchStart={onMouseDownMove} className={containerClass}>
+      <div className="w-full h-full relative">
+        {item.type === 'image' && <img src={item.content} alt="Mood" className="w-full h-full object-contain pointer-events-none" />}
+        {item.type === 'video' && <video src={item.content} className="w-full h-full object-contain pointer-events-none" autoPlay loop muted playsInline />}
+        {item.type === 'text' && (
+          <textarea className={`w-full h-full p-6 bg-transparent outline-none resize-none font-bold text-xl leading-relaxed text-gray-800 placeholder-gray-300 ${!isEditMode && 'pointer-events-none'}`} value={String(item.content)} onChange={(e) => isEditMode && updateItem(item.id, { content: e.target.value })} placeholder="문구를 적어주세요..." readOnly={!isEditMode} />
+        )}
+        {isEditMode && <button type="button" onClick={() => deleteItem(item.id)} className="delete-btn absolute -top-3 -right-3 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-red-600 active:scale-90 shadow-lg">×</button>}
+      </div>
+      {isEditMode && <div onMouseDown={onMouseDownResize} onTouchStart={onMouseDownResize} className="resize-handle absolute -bottom-3 -right-3 w-8 h-8 bg-zinc-800 rounded-full cursor-nwse-resize opacity-0 group-hover:opacity-100 flex items-center justify-center text-white z-[60] shadow-lg transition-opacity border-4 border-white"><Maximize2 size={12} strokeWidth={3} /></div>}
+      {isEditMode && <div className="absolute -top-3 -left-3 bg-white border border-gray-200 p-2 rounded-full opacity-0 group-hover:opacity-100 shadow-lg transition-opacity z-[60]"><Move size={14} className="text-zinc-500" /></div>}
+    </div>
+  );
+};
+
+const getAppScale = () => {
+  const rootEl = document.getElementById('root');
+  if (!rootEl) return 1;
+  const rect = rootEl.getBoundingClientRect();
+  return rect.width / 1620;
+};
+
+const getViewportSize = () => {
+  const body = document.body;
+  if (body) {
+    return {
+      width: body.clientWidth || window.innerWidth,
+      height: body.clientHeight || window.innerHeight
+    };
+  }
+  return {
+    width: window.innerWidth,
+    height: window.innerHeight
+  };
+};
+
+// --- [메인 App] ---
+const App = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [windowSize, setWindowSize] = useState(getViewportSize());
+  const [userName, setUserName] = useState("");
+  const [scrollY, setScrollY] = useState(0);
+  const [isEditMode, setIsEditMode] = useState(true);
+  const [selectedMood, setSelectedMood] = useState(null);
+  const [moodContents, setMoodContents] = useState({});
+  const [showGridDirectly, setShowGridDirectly] = useState(false);
+  const [textData, setTextData] = useState({
+    intro_main_title: { content: "안녕! 나는 당신의 꿈속 요정 구무야.", fontSize: 32, lineHeight: 1.25, textAlign: 'center', marginTop: 0, marginLeft: 0 },
+    intro_main_description: { content: "구무는 당신의 나쁜 꿈을 대신 먹어주는 요정이에요. 이 영상은 당신의 꿈을 지켜줄 요정을 담았습니다.", fontSize: 18, lineHeight: 1.5, textAlign: 'center', marginTop: 15, marginLeft: 0 },
+    intro_sub_title: { content: "포근한 구무 인형", fontSize: 28, lineHeight: 1.2, textAlign: 'left', marginTop: 30, marginLeft: 0 },
+    intro_description: { content: "구무는 당신의 나쁜 꿈을 대신 먹어주는 요정이에요. 이 인형은 구무의 따뜻한 에너지를 담아 제작되었습니다. 밤마다 당신의 곁에서 평온한 잠자리를 만들어줄 거예요.", fontSize: 18, lineHeight: 1.7, textAlign: 'left', marginTop: 10, marginLeft: 0 },
+    mood_header_title: { content: "님은 어떤 무드가 가장 마음에 드시나요?", fontSize: 60, lineHeight: 1.1, textAlign: 'center', marginTop: 0, marginLeft: 0 },
+    mood_header_desc: { content: "각 무드를 클릭하시면 설명을 보실 수 있습니다. 마음에 드는 무드를 골라 하트를 눌러보세요.", fontSize: 22, lineHeight: 1.5, textAlign: 'center', marginTop: 0, marginLeft: 0 }
+  });
+  const [introData, setIntroData] = useState({ video: "https://assets.mixkit.co/videos/preview/mixkit-curious-white-cat-looking-at-the-camera-43431-large.mp4", photos: [{ url: "https://images.unsplash.com/photo-1559445366-4e5659837965?auto=format&fit=crop&q=80&w=800", width: 48, height: 450 }, { url: "https://images.unsplash.com/photo-1515488764276-beab7607c1e6?auto=format&fit=crop&q=80&w=800", width: 48, height: 450 }] });
+  const [moods, setMoods] = useState([{ id: 1, name: '지적인', liked: false, image: null }, { id: 2, name: '로맨틱', liked: false, image: null }, { id: 3, name: '우아한', liked: false, image: null }, { id: 4, name: '액티브한', liked: false, image: null }, { id: 5, name: '소박한', liked: false, image: null }, { id: 6, name: '모던한', liked: false, image: null }, { id: 7, name: '미니멀한', liked: false, image: null }, { id: 8, name: '이국적인', liked: false, image: null }]);
+  const [currentMoodId, setCurrentMoodId] = useState('5.1');
+  const [bgColor, setBgColor] = useState('#ffffff');
+  const [zoom, setZoom] = useState(1); 
+  const [images, setImages] = useState([]);
+  const [interactingImageId, setInteractingImageId] = useState(null);
+  const [selectedImageId, setSelectedImageId] = useState(null);
+  const [interactionType, setInteractionType] = useState(null); 
+  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFixedMode, setIsFixedMode] = useState(false);
+  const [layouts, setLayouts] = useState({});
+  const [aiDescription, setAiDescription] = useState("");
+  const [symbolColors, setSymbolColors] = useState(['#a3b899', '#d3a4b0', '#dec5b1']);
+  const MOOD_TITLE_MAP = {
+    1: { ko: '지적인', en: 'Intelligent' },
+    2: { ko: '로맨틱한', en: 'Romantic' },
+    3: { ko: '우아한', en: 'Elegant' },
+    4: { ko: '액티브한', en: 'Active' },
+    5: { ko: '소박한', en: 'Rustic' },
+    6: { ko: '모던한', en: 'Modern' },
+    7: { ko: '미니멀한', en: 'Minimal' },
+    8: { ko: '이국적인', en: 'Exotic' }
+  };
+  const getOctagonStyle = (moodId) => {
+    if (!moodId) return {};
+    const suffix = moodId.split('.')[1];
+    
+    const W = 2474.7014;
+    const H = 2708.1735;
+    
+    const angleMap = {
+      '8': 0,    // 01 Exotic
+      '2': 45,   // 02 Romantic
+      '3': 90,   // 03 Elegance
+      '1': 135,  // 04 Sophisticated
+      '6': 180,  // 05 Modern
+      '7': 225,  // 06 Minimal
+      '4': 270,  // 07 Active
+      '5': 315   // 08 Country
+    };
+    
+    const angle = angleMap[suffix] !== undefined ? angleMap[suffix] : 0;
+    
+    // Exact visual bounds of the rotated SVG shape relative to its center,
+    // computed from the SVG path coordinates to prevent alignment shifts.
+    const boundsMap = {
+      '8': { leftmost: 1237.3507, rightmost: 1237.3507, topmost: 1354.0867, bottommost: 1354.0867 }, // 01 Exotic
+      '2': { leftmost: 1319.7239, rightmost: 1154.6528, topmost: 1154.6528, bottommost: 1319.7239 }, // 02 Romantic
+      '3': { leftmost: 1354.0867, rightmost: 1354.0867, topmost: 1237.3507, bottommost: 1237.3507 }, // 03 Elegance
+      '1': { leftmost: 1319.7239, rightmost: 1154.6528, topmost: 1319.7239, bottommost: 1154.6528 }, // 04 Sophisticated
+      '6': { leftmost: 1237.3507, rightmost: 1237.3507, topmost: 1354.0867, bottommost: 1354.0867 }, // 05 Modern
+      '7': { leftmost: 1154.6528, rightmost: 1319.7239, topmost: 1319.7239, bottommost: 1154.6528 }, // 06 Minimal
+      '4': { leftmost: 1354.0867, rightmost: 1354.0867, topmost: 1237.3507, bottommost: 1237.3507 }, // 07 Active
+      '5': { leftmost: 1154.6528, rightmost: 1319.7239, topmost: 1154.6528, bottommost: 1319.7239 }  // 08 Country
+    };
+    
+    const bounds = boundsMap[suffix] || { leftmost: W/2, rightmost: W/2, topmost: H/2, bottommost: H/2 };
+    
+    let cx = 810;  // Default center X
+    let cy = 1080; // Default center Y
+    
+    if (suffix === '8') { // 01 Exotic
+      cy = 246.4119 + bounds.topmost;
+    } else if (suffix === '2') { // 02 Romantic
+      cy = 479.8776 + bounds.topmost;
+      cx = 1620 - 50.809 - bounds.rightmost;
+    } else if (suffix === '3') { // 03 Elegance
+      cx = 1620 - 50.809 - bounds.rightmost;
+    } else if (suffix === '1') { // 04 Sophisticated
+      cy = 2160 - 210.984 - bounds.bottommost;
+      cx = 1620 - 50.809 - bounds.rightmost;
+    } else if (suffix === '6') { // 05 Modern
+      cy = 2160 - 152.6019 - bounds.bottommost;
+    } else if (suffix === '7') { // 06 Minimal
+      cy = 2160 - 210.984 - bounds.bottommost;
+      cx = 50.809 + bounds.leftmost;
+    } else if (suffix === '4') { // 07 Active
+      cx = 50.809 + bounds.leftmost;
+    } else if (suffix === '5') { // 08 Country
+      cy = 479.8776 + bounds.topmost;
+      cx = 50.809 + bounds.leftmost;
+    }
+    
+    const left = cx - W / 2;
+    const top = cy - H / 2;
+    
+    return {
+      position: 'absolute',
+      width: `${W}px`,
+      height: `${H}px`,
+      left: `${left}px`,
+      top: `${top}px`,
+      transform: `rotate(${angle}deg)`,
+      maskImage: 'url("디자인!/조각 분리.svg")',
+      WebkitMaskImage: 'url("디자인!/조각 분리.svg")',
+      maskRepeat: 'no-repeat',
+      WebkitMaskRepeat: 'no-repeat',
+      maskPosition: 'center',
+      WebkitMaskPosition: 'center',
+      maskSize: 'contain',
+      WebkitMaskSize: 'contain',
+      backgroundColor: '#c1c1c6',
+      zIndex: 0,
+      pointerEvents: 'none'
+    };
+  };
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [customMoodDesc, setCustomMoodDesc] = useState("");
+  const [customMallDesc, setCustomMallDesc] = useState("");
+  const [isGroupingMode, setIsGroupingMode] = useState(false);
+  const [groupSelections, setGroupSelections] = useState([]);
+  
+  const canvasRef = useRef(null);
+  const charInputRef = useRef(null);
+  const itemInputRef = useRef(null); 
+  const characterOnlyRef = useRef(null); 
+  const downloadCardRef = useRef(null); 
+  const hiddenCaptureRef = useRef(null);
+  const aiCardRef = useRef(null);
+
+  const [aiCardHeight, setAiCardHeight] = useState(450);
+  const [isStateLoaded, setIsStateLoaded] = useState(false);
+  const saveTimeoutRef = useRef(null);
+  useEffect(() => {
+    if (currentPage === 'page9' && aiCardRef.current) {
+      const handleResize = () => {
+        if (aiCardRef.current) {
+          setAiCardHeight(aiCardRef.current.offsetHeight);
+        }
+      };
+      // Set initial size
+      handleResize();
+      
+      const observer = new ResizeObserver((entries) => {
+        for (let entry of entries) {
+          setAiCardHeight(entry.target.offsetHeight);
+        }
+      });
+      observer.observe(aiCardRef.current);
+      return () => observer.disconnect();
+    }
+  }, [currentPage, aiDescription, isAiLoading]);
+
+  useEffect(() => {
+    const loadState = async () => {
+      try {
+        const isFreshSession = !sessionStorage.getItem('gumu_session_active');
+        sessionStorage.setItem('gumu_session_active', 'true');
+
+        let state = await window.localforage.getItem('gumu_app_state');
+        if (!state) {
+          try {
+            const response = await fetch('../gumu_세팅_데이터.json');
+            if (response.ok) {
+              const data = await response.json();
+              if (data && data.gumu_app_state) {
+                state = data.gumu_app_state;
+                await window.localforage.setItem('gumu_app_state', state);
+                console.log('Successfully auto-imported data from ../gumu_세팅_데이터.json');
+              }
+            }
+          } catch (err) {
+            try {
+              const response = await fetch('gumu_세팅_데이터.json');
+              if (response.ok) {
+                const data = await response.json();
+                if (data && data.gumu_app_state) {
+                  state = data.gumu_app_state;
+                  await window.localforage.setItem('gumu_app_state', state);
+                  console.log('Successfully auto-imported data from gumu_세팅_데이터.json');
+                }
+              }
+            } catch (err2) {}
+          }
+        }
+
+        if (state) {
+          if (state.userName && !isFreshSession) setUserName(state.userName);
+          if (state.introData) setIntroData(state.introData);
+          if (state.textData) setTextData(state.textData);
+          if (state.moods) {
+            if (isFreshSession) setMoods(state.moods.map(m => ({ ...m, liked: false })));
+            else setMoods(state.moods);
+          }
+          if (state.moodContents) setMoodContents(state.moodContents);
+          if (state.layouts) {
+            const cleanLayouts = { ...state.layouts };
+            if (cleanLayouts['5.8']) {
+              const currentImages = cleanLayouts['5.8'].images || [];
+              const others = currentImages.filter(img => img.type !== 'character');
+              const defaultChar = {
+                id: 'char_basic',
+                type: 'character',
+                src: '디자인!/인형 기본.PNG',
+                x: 376,
+                y: 672,
+                width: 816,
+                height: 816,
+                homeX: 376,
+                homeY: 672,
+                zIndex: 1,
+                aspectRatio: 1
+              };
+              cleanLayouts['5.8'].images = [defaultChar, ...others];
+              cleanLayouts['5.8'].baseline = [defaultChar, ...others];
+            }
+            if (isFreshSession) {
+              for (const key in cleanLayouts) {
+                if (cleanLayouts[key] && cleanLayouts[key].baseline) {
+                  cleanLayouts[key].images = [...cleanLayouts[key].baseline];
+                  cleanLayouts[key].isFixed = true;
+                }
+              }
+              setLayouts(cleanLayouts);
+            } else {
+              setLayouts(cleanLayouts);
+            }
+          }
+          if (state.currentMoodId) setCurrentMoodId(state.currentMoodId);
+          if (state.bgColor) setBgColor(state.bgColor);
+          if (state.isEditMode !== undefined) setIsEditMode(state.isEditMode);
+          if (state.selectedMood && !isFreshSession) setSelectedMood(state.selectedMood);
+          if (state.currentPage && !isFreshSession) {
+            if (state.currentPage === 4 && !state.selectedMood) {
+              setCurrentPage(3);
+            } else {
+              setCurrentPage(state.currentPage);
+            }
+          } else {
+            setCurrentPage(1);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      setIsStateLoaded(true);
+    };
+    loadState();
+  }, []);
+
+  useEffect(() => {
+    const resizeApp = () => {
+      const rootEl = document.getElementById('root');
+      if (!rootEl) return;
+      const size = getViewportSize();
+      setWindowSize(size);
+      
+      // Scale to fit the screen width exactly, placing the scrollbar on the screen edge
+      const scale = size.width / 1620;
+      
+      // Center horizontally, align top, and scale from top-center
+      rootEl.style.transform = `translateX(-50%) scale(${scale})`;
+      rootEl.style.transformOrigin = 'top center';
+    };
+
+    window.addEventListener('resize', resizeApp);
+    resizeApp();
+    
+    // Multiple progressive timeouts during launch to handle iOS standalone webapp viewport initialization delays
+    const t1 = setTimeout(resizeApp, 100);
+    const t2 = setTimeout(resizeApp, 300);
+    const t3 = setTimeout(resizeApp, 600);
+    const t4 = setTimeout(resizeApp, 1000);
+    
+    return () => {
+      window.removeEventListener('resize', resizeApp);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+    };
+  }, []);
+
+  useEffect(() => {
+    let bodyBg = '#ffffff';
+    if (currentPage === 1) {
+      bodyBg = '#ededf2';
+    } else if (currentPage === 2) {
+      bodyBg = '#b7b7bc';
+    } else if (currentPage === 3) {
+      bodyBg = '#ededf2';
+    } else if (currentPage === 4) {
+      bodyBg = '#ededf2'; // Keep background color consistent with Page 3 to prevent visual margin color snapping
+    } else if (currentPage === 'styling') {
+      bodyBg = '#b7b7bc';
+    } else {
+      bodyBg = bgColor || '#ffffff';
+    }
+    document.body.style.backgroundColor = bodyBg;
+    document.documentElement.style.backgroundColor = bodyBg;
+    
+    // Manage #root styles dynamically based on current page
+    const themeColorMeta = document.getElementById('theme-color-meta');
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', bodyBg);
+    }
+    const rootEl = document.getElementById('root');
+    if (rootEl) {
+      rootEl.style.backgroundColor = bodyBg; // Dynamically match root background with current page background!
+      rootEl.style.height = '2160px'; // Lock layout height to 2160px design height
+      if (currentPage === 4) {
+        rootEl.style.overflow = 'hidden'; // Keep page 4 contained exactly inside #root boundaries!
+        rootEl.scrollTop = 0;
+      } else {
+        rootEl.style.overflow = ''; // Let default CSS rule overflow-x: hidden / overflow-y: auto take effect!
+      }
+    }
+  }, [currentPage, selectedMood, bgColor, layouts, windowSize]);
+
+  useEffect(() => {
+    if (!isStateLoaded) return;
+    
+    // Clean layouts to remove pixelData to prevent bloating IndexedDB
+    const cleanLayouts = {};
+    for (const [key, val] of Object.entries(layouts)) {
+      const cleanImages = val.images ? val.images.map(img => { const { pixelData, ...rest } = img; return rest; }) : [];
+      const cleanBaseline = val.baseline ? val.baseline.map(img => { const { pixelData, ...rest } = img; return rest; }) : [];
+      cleanLayouts[key] = { ...val, images: cleanImages, baseline: cleanBaseline };
+    }
+
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      window.localforage.setItem('gumu_app_state', {
+        introData,
+        textData,
+        moods,
+        moodContents,
+        layouts: cleanLayouts,
+        currentPage,
+        userName,
+        currentMoodId,
+        bgColor,
+        isEditMode,
+        selectedMood
+      }).catch(err => console.error('AutoSave failed:', err));
+    }, 1500);
+  }, [introData, textData, moods, moodContents, layouts, currentPage, userName, currentMoodId, bgColor, isEditMode, selectedMood, isStateLoaded]);
+
+  useEffect(() => { const script = document.createElement('script'); script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"; script.async = true; document.head.appendChild(script); return () => { if (document.head.contains(script)) document.head.removeChild(script); }; }, []);
+  useEffect(() => {
+    const rootEl = document.getElementById('root');
+    const handleScroll = () => {
+      if (rootEl) {
+        setScrollY(rootEl.scrollTop);
+      } else {
+        setScrollY(window.scrollY);
+      }
+    };
+    if (rootEl) rootEl.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      if (rootEl) rootEl.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  // Force scrollTop = 0 lock while currentPage === 4 to block Safari scroll shifts
+  useEffect(() => {
+    const rootEl = document.getElementById('root');
+    if (!rootEl) return;
+    const lockScroll = () => {
+      if (currentPage === 4) {
+        rootEl.scrollTop = 0;
+      }
+    };
+    if (currentPage === 4) {
+      rootEl.scrollTop = 0;
+      rootEl.addEventListener('scroll', lockScroll);
+    }
+    return () => {
+      rootEl.removeEventListener('scroll', lockScroll);
+    };
+  }, [currentPage]);
+  const currentMood = MOOD_DATA[currentMoodId] || MOOD_DATA['5.1'];
+  const isStep5 = currentMood.step === '05';
+  const isStep6 = currentMood.step === '06';
+  const isStep7 = currentMood.step === '07';
+  const currentStyle = STYLES_DESC.find(s => s.sub === currentMood.name) || STYLES_DESC[0];
+  const pathStep5Id = useMemo(() => { const suffix = currentMoodId.split('.')[1]; return `5.${suffix}`; }, [currentMoodId]);
+  const getWornImages = () => { const characters = images.filter(img => img.type === 'character'); if (characters.length === 0) return images; return images.filter(img => { if (img.type === 'character') return true; return characters.some(char => Math.abs(img.x - char.x) < 2 && Math.abs(img.y - char.y) < 2); }); };
+  const Z_INDEX_MAP = { character: 1, hair: 5, clothing: 10, accessory: 20 };
+  const isLocked = (img) => {
+    if (!img) return false;
+    if (img.type === 'character') return true;
+    if (!isFixedMode) return false;
+    if (isStep5) return false;
+    if (isStep6) return img.type === 'hair';
+    if (isStep7) return img.type === 'hair' || img.type === 'clothing';
+    return false;
+  };
+  const isDark = (color) => { if (!color) return false; const hex = color.replace('#', ''); const r = parseInt(hex.substr(0, 2), 16); const g = parseInt(hex.substr(2, 2), 16); const b = parseInt(hex.substr(4, 2), 16); return (r * 0.299 + g * 0.587 + b * 0.114) < 128; };
+  const saveToMemory = (id, color, currentImages, isFixed, isNewBaseline = false) => { setLayouts(prev => { const existing = prev[id] || {}; return { ...prev, [id]: { ...existing, bgColor: color, images: [...currentImages], isFixed, baseline: isNewBaseline ? [...currentImages] : (existing.baseline || [...currentImages]) } }; }); };
+  const getLatestBaseFromStep6 = () => { const suffix = currentMoodId.split('.')[1]; const step6Id = `6.${suffix}`; const step6Data = layouts[step6Id]; let base = []; if (step6Data) { const chars = step6Data.images.filter(img => img.type === 'character'); const hairs = step6Data.images.filter(img => img.type === 'hair'); const clothes = step6Data.images.filter(img => img.type === 'clothing'); base.push(...chars.map(c => ({...c, zIndex: Z_INDEX_MAP.character}))); const wornHairs = hairs.filter(hair => chars.some(char => Math.abs(char.x - hair.x) < 2 && Math.abs(char.y - hair.y) < 2)); base.push(...wornHairs.map(h => ({...h, zIndex: Z_INDEX_MAP.hair}))); const wornClothes = clothes.filter(cloth => chars.some(char => Math.abs(char.x - cloth.x) < 2 && Math.abs(char.y - cloth.y) < 2)); base.push(...wornClothes.map(c => ({...c, zIndex: c.zIndex}))); } return base; };
+  const getLatestBaseFromStep5 = () => { const step5Data = layouts[pathStep5Id]; let base = []; if (step5Data) { const chars = step5Data.images.filter(img => img.type === 'character'); const hairs = step5Data.images.filter(img => img.type === 'hair'); base.push(...chars.map(c => ({...c, zIndex: Z_INDEX_MAP.character}))); const wornHairs = hairs.filter(hair => chars.some(char => Math.abs(char.x - hair.x) < 2 && Math.abs(char.y - hair.y) < 2)); base.push(...wornHairs.map(h => ({...h, zIndex: Z_INDEX_MAP.hair}))); } return base; };
+  const resetToLastFixed = () => {
+    const memoryData = layouts[currentMoodId];
+    if (!memoryData || !memoryData.baseline) return;
+    setIsLoading(true);
+    const restoreImages = async () => {
+      let imagesToRestore = [];
+      let nextBgColor = memoryData.bgColor;
+      if (isStep7) {
+        imagesToRestore = [...getLatestBaseFromStep6(), ...memoryData.baseline.filter(img => img.type === 'accessory')];
+        if (layouts[pathStep5Id]) nextBgColor = layouts[pathStep5Id].bgColor;
+      } else if (isStep6) {
+        imagesToRestore = [...getLatestBaseFromStep5(), ...memoryData.baseline.filter(img => img.type === 'clothing')];
+        if (layouts[pathStep5Id]) nextBgColor = layouts[pathStep5Id].bgColor;
+      } else {
+        imagesToRestore = memoryData.baseline;
+      }
+
+      // Force character coordinate alignment to prevent any shifts on reset
+      imagesToRestore = imagesToRestore.map(img => {
+        if (img.type === 'character') {
+          return {
+            ...img,
+            x: 376,
+            y: 672,
+            width: 816,
+            height: 816,
+            homeX: 376,
+            homeY: 672,
+            aspectRatio: 1
+          };
+        }
+        return img;
+      });
+
+      const loaded = await Promise.all(imagesToRestore.map(imgData => {
+        return new Promise((resolve) => {
+          const imgObj = new Image();
+          imgObj.src = imgData.src;
+          imgObj.onload = () => resolve({
+            ...imgData,
+            pixelData: getPixelDataFromImg(imgObj),
+            naturalWidth: imgObj.naturalWidth,
+            naturalHeight: imgObj.naturalHeight
+          });
+          imgObj.onerror = () => resolve(null);
+        });
+      }));
+      setImages(loaded.filter(i => i !== null));
+      setBgColor(nextBgColor);
+      setIsFixedMode(true);
+      setIsLoading(false);
+    };
+    restoreImages();
+    setSelectedImageId(null);
+  };
+  
+  // 처음으로 돌아가기 (사용자가 처음부터 스타일링을 다시 할 수 있도록 초기 픽스 상태로 데이터 리셋 후 이름 비움)
+  const handleGlobalReset = () => {
+    setLayouts(prev => {
+      const next = { ...prev };
+      for (const key in next) {
+        if (next[key] && next[key].baseline) {
+          next[key].images = [...next[key].baseline];
+          next[key].isFixed = true;
+        }
+      }
+      return next;
+    });
+    setMoods(prev => prev.map(m => ({ ...m, liked: false })));
+    setUserName("");
+    setCurrentPage(1);
+    window.scrollTo(0, 0);
+  };
+
+  const handleExportData = async () => {
+    try {
+      const state = await window.localforage.getItem('gumu_app_state');
+      if (!state) { alert('내보낼 세팅 데이터가 없습니다. 먼저 세팅을 완료해주세요.'); return; }
+      const blob = new Blob([JSON.stringify(state)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const downloadNode = document.createElement('a');
+      downloadNode.href = url;
+      downloadNode.download = "gumu_세팅_데이터.json";
+      document.body.appendChild(downloadNode);
+      downloadNode.click();
+      downloadNode.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert('데이터 내보내기 실패!');
+    }
+  };
+
+  const handleImportData = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const importedState = JSON.parse(event.target.result);
+        await window.localforage.setItem('gumu_app_state', importedState);
+        alert('세팅 데이터를 성공적으로 불러왔습니다! 이제 화면을 새로고침합니다.');
+        sessionStorage.removeItem('gumu_session_active'); 
+        window.location.reload();
+      } catch (err) {
+        console.error(err);
+        alert('잘못된 세팅 파일이거나 처리 중 오류가 발생했습니다.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleRetryStyling = () => { const moodIdPage3 = selectedMood?.id || 1; const pathIds = [`5.${moodIdPage3}`, `6.${moodIdPage3}`, `7.${moodIdPage3}`]; setLayouts(prev => { const next = { ...prev }; pathIds.forEach(id => { if (next[id] && next[id].baseline) { next[id].images = [...next[id].baseline]; next[id].isFixed = true; } }); return next; }); const initialId = pathIds[0]; setBgColor(layouts[initialId]?.bgColor || '#ffffff'); setCurrentMoodId(initialId); setCurrentPage('styling'); window.scrollTo(0, 0); };
+  const moveLayerInList = (imageId, direction) => { setImages(prev => { const type = 'clothing'; const items = prev.filter(img => img.type === type).sort((a, b) => a.zIndex - b.zIndex); const others = prev.filter(img => img.type !== type); const index = items.findIndex(img => img.id === imageId); if (index === -1) return prev; const newItems = [...items]; if (direction === 'left' && index > 0) [newItems[index], newItems[index - 1]] = [newItems[index - 1], newItems[index]]; else if (direction === 'right' && index < newItems.length - 1) [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]]; else return prev; return [...others, ...newItems.map((img, i) => ({ ...img, zIndex: Z_INDEX_MAP.clothing + i }))]; }); };
+  const handleNavigation = (targetId) => { if (targetId === 'page8') { setCurrentPage('page8'); return; } if (MOOD_DATA[targetId]) { saveToMemory(currentMoodId, bgColor, images, isFixedMode, false); setIsLoading(true); setCurrentMoodId(targetId); } };
+  
+  const confirmGroup = () => {
+    if (groupSelections.length < 2) return;
+    const newGroupId = `group_${Date.now()}`;
+    const baseImg = images.find(i => i.id === groupSelections[0]);
+    if (!baseImg) return;
+    setImages(prev => prev.map(img => {
+      if (groupSelections.includes(img.id)) {
+        return { ...img, groupId: newGroupId, x: baseImg.x, y: baseImg.y };
+      }
+      return img;
+    }));
+    setGroupSelections([]);
+    setIsGroupingMode(false);
+  };
+  const handleUngroup = (groupId) => {
+    setImages(prev => prev.map(img => img.groupId === groupId ? { ...img, groupId: null } : img));
+  };
+  
+  const getPixelDataFromImg = (imgObj) => { try { const offCanvas = document.createElement('canvas'); offCanvas.width = imgObj.naturalWidth || 1; offCanvas.height = imgObj.naturalHeight || 1; const ctx = offCanvas.getContext('2d'); ctx.drawImage(imgObj, 0, 0); return ctx.getImageData(0, 0, offCanvas.width, offCanvas.height); } catch (e) { console.warn("getPixelDataFromImg CORS/SecurityError:", e); return null; } };
+  
+  useEffect(() => { 
+    if (currentPage !== 'styling') return;
+    setIsLoading(true);
+    setSelectedImageId(null);
+    const loadData = async () => {
+      const memoryData = layouts[currentMoodId];
+      const step5Data = layouts[pathStep5Id];
+      let nextImages = [], nextBgColor = '#ffffff', nextFixed = false;
+      if (step5Data) { nextBgColor = step5Data.bgColor; } else if (memoryData) { nextBgColor = memoryData.bgColor; }
+      if (isStep7) {
+        nextImages = [...getLatestBaseFromStep6(), ...(memoryData ? memoryData.images.filter(img => img.type === 'accessory') : [])];
+        nextFixed = memoryData ? memoryData.isFixed : true;
+        if (!memoryData) saveToMemory(currentMoodId, nextBgColor, nextImages, true, true);
+      } else if (isStep6) {
+        nextImages = [...getLatestBaseFromStep5(), ...(memoryData ? memoryData.images.filter(img => img.type === 'clothing') : [])];
+        nextFixed = memoryData ? memoryData.isFixed : true;
+        if (!memoryData) saveToMemory(currentMoodId, nextBgColor, nextImages, true, true);
+      } else {
+        if (memoryData) { nextImages = memoryData.images; nextFixed = memoryData.isFixed; } else { nextFixed = false; }
+        const chars = nextImages.filter(img => img.type === 'character');
+        const others = nextImages.filter(img => img.type !== 'character');
+        if (chars.length > 0) {
+          const latestChar = {
+            ...chars[chars.length - 1],
+            x: 376,
+            y: 672,
+            width: 816,
+            height: 816,
+            homeX: 376,
+            homeY: 672,
+            aspectRatio: 1
+          };
+          nextImages = [latestChar, ...others];
+        } else {
+          const defaultChar = {
+            id: 'char_basic',
+            type: 'character',
+            src: '디자인!/인형 기본.PNG',
+            x: 376,
+            y: 672,
+            width: 816,
+            height: 816,
+            homeX: 376,
+            homeY: 672,
+            zIndex: 1,
+            aspectRatio: 1
+          };
+          nextImages = [defaultChar, ...others];
+        }
+      }
+      setBgColor(nextBgColor);
+      setIsFixedMode(nextFixed);
+      const loadedImages = await Promise.all(nextImages.map(imgData => {
+        return new Promise((resolve) => {
+          const imgObj = new Image();
+          imgObj.src = imgData.src;
+          imgObj.onload = () => resolve({ ...imgData, pixelData: getPixelDataFromImg(imgObj), naturalWidth: imgObj.naturalWidth, naturalHeight: imgObj.naturalHeight });
+          imgObj.onerror = () => resolve(null);
+        });
+      }));
+      let finalLoaded = loadedImages.filter(img => img !== null);
+      if (isStep5 && currentMoodId === '5.8') {
+        const hasChar = finalLoaded.some(img => img.type === 'character');
+        if (!hasChar) {
+          finalLoaded = [
+            {
+              id: 'char_basic',
+              type: 'character',
+              src: '디자인!/인형 기본.PNG',
+              x: 376,
+              y: 672,
+              width: 816,
+              height: 816,
+              homeX: 376,
+              homeY: 672,
+              zIndex: 1,
+              aspectRatio: 1
+            },
+            ...finalLoaded
+          ];
+        }
+        nextBgColor = '#b7b7bc';
+        setBgColor('#b7b7bc');
+      }
+      setImages(finalLoaded);
+      setIsLoading(false);
+    };
+    loadData();
+  }, [currentMoodId, currentPage, pathStep5Id]);
+
+
+  const STYLE_MAIN_COLORS = {
+    1: '#111117', // Sophisticated
+    2: '#7e9ce8', // Romantic
+    3: '#616a6b', // Elegant
+    4: '#edff6d', // Active
+    5: '#54524e', // Country
+    6: '#dcdce0', // Modern
+    7: '#41505d', // Minimal
+    8: '#ad2a3d'  // Exotic
+  };
+
+  const getActiveHairOption = () => {
+    if (!images || images.length === 0) return null;
+    const hasImg = (name) => images.some(img => img.src && img.src.includes(name));
+    if (hasImg('IMG_0861')) return 1;
+    if (hasImg('IMG_0863')) return 2;
+    if (hasImg('IMG_0864')) return 3;
+    if (hasImg('IMG_0865')) return 4;
+    if (hasImg('IMG_0874')) return 5;
+    if (hasImg('IMG_0875')) return 6;
+    return null;
+  };
+
+  const selectHairOption = (optionNum) => {
+    const dollSrc = '디자인!/인형 기본.PNG';
+    const existingChar = images.find(img => img.type === 'character');
+    const charItem = existingChar || {
+      id: 'char_basic',
+      type: 'character',
+      src: dollSrc,
+      x: 376,
+      y: 672,
+      width: 816,
+      height: 816,
+      homeX: 376,
+      homeY: 672,
+      zIndex: 1,
+      aspectRatio: 1
+    };
+
+    const baseExoticDir = '../../캐릭터 헤어 옷 소품/에조틱7.12/';
+    let newHairs = [];
+    if (optionNum === 1) {
+      newHairs = [
+        { id: 'hair_1_back', type: 'hair', src: baseExoticDir + 'IMG_0860.PNG', x: 376, y: 672, width: 816, height: 816, zIndex: 0, aspectRatio: 1 },
+        { id: 'hair_1_front', type: 'hair', src: baseExoticDir + 'IMG_0861.PNG', x: 376, y: 672, width: 816, height: 816, zIndex: 5, aspectRatio: 1 }
+      ];
+    } else if (optionNum === 2) {
+      newHairs = [
+        { id: 'hair_2_back', type: 'hair', src: baseExoticDir + 'IMG_0862.PNG', x: 376, y: 672, width: 816, height: 816, zIndex: 0, aspectRatio: 1 },
+        { id: 'hair_2_front', type: 'hair', src: baseExoticDir + 'IMG_0863.PNG', x: 376, y: 672, width: 816, height: 816, zIndex: 5, aspectRatio: 1 }
+      ];
+    } else if (optionNum === 3) {
+      newHairs = [
+        { id: 'hair_3', type: 'hair', src: baseExoticDir + 'IMG_0864.PNG', x: 376, y: 672, width: 816, height: 816, zIndex: 5, aspectRatio: 1 }
+      ];
+    } else if (optionNum === 4) {
+      newHairs = [
+        { id: 'hair_4', type: 'hair', src: baseExoticDir + 'IMG_0865.PNG', x: 376, y: 672, width: 816, height: 816, zIndex: 5, aspectRatio: 1 }
+      ];
+    } else if (optionNum === 5) {
+      newHairs = [
+        { id: 'hair_5', type: 'hair', src: baseExoticDir + 'IMG_0874.PNG', x: 376, y: 672, width: 816, height: 816, zIndex: 5, aspectRatio: 1 }
+      ];
+    } else if (optionNum === 6) {
+      newHairs = [
+        { id: 'hair_6', type: 'hair', src: baseExoticDir + 'IMG_0875.PNG', x: 376, y: 672, width: 816, height: 816, zIndex: 5, aspectRatio: 1 }
+      ];
+    }
+
+    const otherImages = images.filter(img => img.type !== 'character' && img.type !== 'hair');
+    const nextImages = [charItem, ...newHairs, ...otherImages];
+
+    setImages(nextImages);
+    
+    setLayouts(prev => {
+      const existing = prev[currentMoodId] || {};
+      return {
+        ...prev,
+        [currentMoodId]: {
+          ...existing,
+          bgColor: '#b7b7bc',
+          images: nextImages,
+          isFixed: existing.isFixed,
+          baseline: existing.baseline || nextImages
+        }
+      };
+    });
+  };
+
+  const toggleLayoutLock = () => { if (!isFixedMode) { saveToMemory(currentMoodId, bgColor, images, true, true); setIsFixedMode(true); } else setIsFixedMode(false); };
+  const handleImageUpload = (e, type) => {
+    const files = Array.from(e.target.files);
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const compressedUrl = await compressImage(reader.result, 800);
+        const imgObj = new Image();
+        imgObj.src = compressedUrl;
+        imgObj.onload = () => {
+          const aspectRatio = imgObj.naturalHeight / imgObj.naturalWidth;
+          const initialWidth = 305;
+          const initialX = (150 + (images.length % 5) * 30), initialY = (150 + (images.length % 5) * 30);
+          const baseZ = Z_INDEX_MAP[type] || 5;
+          const sameTypeImages = images.filter(img => img.type === type);
+          const nextZ = sameTypeImages.length > 0 ? Math.max(...sameTypeImages.map(i => i.zIndex)) + 1 : baseZ;
+          const isChar = type === 'character';
+          const isHair = type === 'hair';
+          const isClothing = type === 'clothing';
+          const isAccessory = type === 'accessory';
+          const isMainType = isChar || isHair || isClothing || isAccessory;
+          const newItem = {
+            id: Date.now() + Math.random(),
+            src: compressedUrl,
+            type,
+            name: file.name,
+            x: isMainType ? 376 : initialX,
+            y: isMainType ? 672 : initialY,
+            homeX: isMainType ? 376 : initialX,
+            homeY: isMainType ? 672 : initialY,
+            width: isMainType ? 816 : initialWidth,
+            height: isMainType ? 816 * aspectRatio : initialWidth * aspectRatio,
+            aspectRatio: aspectRatio,
+            zIndex: isChar ? 1 : (baseZ === 1 ? 1 : nextZ),
+            pixelData: getPixelDataFromImg(imgObj),
+            naturalWidth: imgObj.naturalWidth,
+            naturalHeight: imgObj.naturalHeight
+          };
+          
+          setImages((prev) => {
+            const filtered = isChar ? prev.filter(img => img.type !== 'character') : prev;
+            const nextImages = [...filtered, newItem];
+            // 동기적으로 레이아웃 상태에도 보존하여 새로고침 시 날아가지 않도록 함
+            setLayouts(lPrev => {
+               const existing = lPrev[currentMoodId] || {};
+               const newBaseline = existing.baseline 
+                  ? (isChar 
+                      ? [...existing.baseline.filter(img => img.type !== 'character'), newItem]
+                      : [...existing.baseline, newItem]
+                    )
+                  : nextImages;
+               return { ...lPrev, [currentMoodId]: { ...existing, bgColor, images: nextImages, isFixed: existing.isFixed, baseline: newBaseline } };
+            });
+            return nextImages;
+          });
+          setSelectedImageId(null);
+        };
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  };
+  const handleCanvasHover = (e) => { 
+    if (interactingImageId || !canvasRef.current || isLoading) return; 
+    const rect = canvasRef.current.getBoundingClientRect(); 
+    const scale = getAppScale();
+    const mx = (e.clientX - rect.left) / (zoom * scale);
+    const my = (e.clientY - rect.top) / (zoom * scale); 
+    const sorted = [...images].sort((a, b) => b.zIndex - a.zIndex); 
+    let cursor = 'default'; 
+    for (const img of sorted) { 
+      if (mx >= img.x && mx <= img.x + img.width && my >= img.y && my <= img.y + img.height) { 
+        if (isLocked(img)) continue; 
+        if (isPixelOpaque(img, mx - img.x, my - img.y)) { 
+          cursor = 'grab'; 
+          break; 
+        } 
+      } 
+    } 
+    canvasRef.current.style.cursor = cursor; 
+  };
+  const isPixelOpaque = (image, localX, localY) => {
+    if (!image.pixelData) return true;
+    const w = image.naturalWidth || image.pixelData.width || image.width;
+    const h = image.naturalHeight || image.pixelData.height || image.height;
+    const px = Math.floor(localX * (w / image.width));
+    const py = Math.floor(localY * (h / image.height));
+    if (px < 0 || px >= w || py < 0 || py >= h) return false;
+    return image.pixelData.data[(py * w + px) * 4 + 3] > 15;
+  };
+  const handleCanvasStart = (e) => { 
+    if (!canvasRef.current || isLoading) return; 
+    const clientX = e.type.includes('touch') ? (e.touches[0] ? e.touches[0].clientX : e.changedTouches[0].clientX) : e.clientX; 
+    const clientY = e.type.includes('touch') ? (e.touches[0] ? e.touches[0].clientY : e.changedTouches[0].clientY) : e.clientY; 
+    const rect = canvasRef.current.getBoundingClientRect(); 
+    const scale = getAppScale();
+    const mx = (clientX - rect.left) / (zoom * scale);
+    const my = (clientY - rect.top) / (zoom * scale); 
+    const sorted = [...images].sort((a, b) => b.zIndex - a.zIndex); 
+    let clicked = false; 
+    for (const img of sorted) { 
+      if (mx >= img.x && mx <= img.x + img.width && my >= img.y && my <= img.y + img.height) { 
+        if (isLocked(img)) continue; 
+        if (isPixelOpaque(img, mx - img.x, my - img.y)) { 
+          e.preventDefault(); 
+          if (isStep5 && img.type === 'hair') { 
+            const hairs = images.filter(i => i.type === 'hair'); 
+            setImages(prev => prev.map(i => ({ ...i, zIndex: i.id === img.id ? Math.max(...hairs.map(p => p.zIndex), 4) + 1 : i.zIndex }))); 
+          } 
+          setInteractingImageId(img.id); 
+          setSelectedImageId(img.id); 
+          setInteractionType('move'); 
+          setStartPos({ x: clientX, y: clientY }); 
+          canvasRef.current.style.cursor = 'grabbing'; 
+          clicked = true; 
+          break; 
+        } 
+      } 
+    } 
+    if (!clicked) setSelectedImageId(null); 
+  };
+  useEffect(() => { 
+    const handleMove = (e) => { 
+      if (!interactingImageId) return; 
+      const clientX = e.type.includes('touch') ? (e.touches[0] ? e.touches[0].clientX : e.changedTouches[0].clientX) : e.clientX; 
+      const clientY = e.type.includes('touch') ? (e.touches[0] ? e.touches[0].clientY : e.changedTouches[0].clientY) : e.clientY; 
+      const scale = getAppScale();
+      const dx = (clientX - startPos.x) / (zoom * scale);
+      const dy = (clientY - startPos.y) / (zoom * scale); 
+      const targetImg = images.find(img => img.id === interactingImageId);
+      const movingGroupId = targetImg ? targetImg.groupId : null;
+      setImages(prev => prev.map(img => (img.id === interactingImageId || (movingGroupId && img.groupId === movingGroupId)) ? { ...img, x: img.x + dx, y: img.y + dy } : img)); 
+      setStartPos({ x: clientX, y: clientY }); 
+    }; 
+    const handleEnd = (e) => { 
+      if (interactingImageId) { 
+        const active = images.find(img => img.id === interactingImageId); 
+        const activeGroupId = active ? active.groupId : null;
+        if (active && ['hair', 'clothing', 'accessory'].includes(active.type)) { 
+          const clientX = e && (e.type && e.type.includes('touch') ? (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : null)) : e.clientX);
+          const clientY = e && (e.type && e.type.includes('touch') ? (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : null)) : e.clientY);
+          const rect = canvasRef.current ? canvasRef.current.getBoundingClientRect() : null;
+          const scale = getAppScale();
+          const dropX = rect && clientX !== null ? (clientX - rect.left) / (zoom * scale) : (active.x + active.width / 2);
+          const dropY = rect && clientY !== null ? (clientY - rect.top) / (zoom * scale) : (active.y + active.height / 2);
+          const chars = images.filter(img => img.type === 'character').sort((a, b) => b.zIndex - a.zIndex); 
+          let snapped = false; 
+          for (const char of chars) { 
+            const isOpaqueDrop = dropX >= char.x && dropX <= char.x + char.width &&
+                                 dropY >= char.y && dropY <= char.y + char.height &&
+                                 isPixelOpaque(char, dropX - char.x, dropY - char.y);
+            if (isOpaqueDrop) { 
+              setImages(prev => prev.map(img => { 
+                if (img.id === interactingImageId || (activeGroupId && img.groupId === activeGroupId)) return { ...img, x: char.x, y: char.y }; 
+                if (['hair', 'accessory'].includes(active.type) && img.type === active.type && img.id !== active.id && (!activeGroupId || img.groupId !== activeGroupId) && img.x === char.x && img.y === char.y) return { ...img, x: img.homeX, y: img.homeY }; 
+                return img; 
+              })); 
+              snapped = true; 
+              break; 
+            } 
+          } 
+          if (!snapped) setImages(prev => prev.map(img => (img.id === interactingImageId || (activeGroupId && img.groupId === activeGroupId)) ? { ...img, homeX: img.x, homeY: img.y } : img)); 
+        } 
+      } 
+      setInteractingImageId(null); setInteractionType(null); if (canvasRef.current) canvasRef.current.style.cursor = 'default'; 
+    }; 
+    if (interactingImageId) { window.addEventListener('mousemove', handleMove); window.addEventListener('mouseup', handleEnd); window.addEventListener('touchmove', handleMove, { passive: false }); window.addEventListener('touchend', handleEnd); } return () => { window.removeEventListener('mousemove', handleMove); window.removeEventListener('mouseup', handleEnd); window.removeEventListener('touchmove', handleMove); window.removeEventListener('touchend', handleEnd); }; 
+  }, [interactingImageId, interactionType, startPos, images, zoom]);
+  const deleteSelectedImage = () => { if (selectedImageId) { const target = images.find(img => img.id === selectedImageId); if (target && !isLocked(target)) { setImages(prev => prev.filter(img => img.id !== selectedImageId)); setSelectedImageId(null); } } };
+  const downloadImage = async (element, fileName, color = null) => { 
+    if (!window.html2canvas || !element) return; 
+    
+    // Clone the element to render it off-screen at 1:1 scale, avoiding visual flickering/cropping
+    const clone = element.cloneNode(true);
+    clone.style.position = "fixed";
+    clone.style.left = "-9999px";
+    clone.style.top = "0px";
+    clone.style.transform = "none";
+    document.body.appendChild(clone);
+    
+    try { 
+      const canvas = await window.html2canvas(clone, { backgroundColor: color, useCORS: true, scale: 2, logging: false }); 
+      
+      if (document.body.contains(clone)) {
+        document.body.removeChild(clone);
+      }
+      
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+
+        const file = new File([blob], fileName, { type: 'image/png' });
+        
+        // Try Web Share API (only works in secure contexts: HTTPS or localhost)
+        if (navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: fileName,
+              text: '도디 결과 이미지'
+            });
+            return; // Successful share
+          } catch (shareErr) {
+            if (shareErr.name === 'AbortError') {
+              return; // User cancelled the share sheet
+            }
+            console.warn("Share failed, falling back to Blob download", shareErr);
+          }
+        }
+
+        // Fallback: Blob URL download (safely avoids Safari's "data: png image" prompt)
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a'); 
+        link.href = url; 
+        link.download = fileName; 
+        link.click();
+        
+        // Cleanup Blob URL memory
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }, 'image/png');
+    } catch (err) { 
+      if (document.body.contains(clone)) {
+        document.body.removeChild(clone);
+      }
+      console.error("Capture or Share failed", err); 
+    } 
+  };
+  
+  const fetchAiDescription = async () => { 
+    const captureEl = hiddenCaptureRef.current; 
+    if (!captureEl || !window.html2canvas) { setCurrentPage('page9'); return; } 
+    setIsAiLoading(true); 
+    setAiDescription(""); 
+    
+    // Create a 5-second minimum delay promise to preserve the wait animation UX
+    const minDelayPromise = new Promise(resolve => setTimeout(resolve, 5000));
+    
+    try { 
+      const moodPathId = `7.${selectedMood.id}`;
+      const savedLayout = layouts[moodPathId] || {};
+      setCustomMoodDesc(savedLayout.customMoodDesc || currentStyle.desc.mood);
+      setCustomMallDesc(savedLayout.customMallDesc || currentStyle.desc.mall);
+      await new Promise(res => setTimeout(res, 100)); 
+      
+      const canvas = await window.html2canvas(captureEl, { backgroundColor: null, scale: 2, useCORS: true, logging: false }); 
+      const base64Data = canvas.toDataURL('image/png').split(',')[1]; 
+      
+      const wornImages = getWornImages();
+      const styleName = selectedMood?.name || '기본 스타일';
+      
+      const cleanFileName = (nameOrSrc) => {
+        if (!nameOrSrc) return '';
+        try {
+          const decoded = decodeURIComponent(nameOrSrc);
+          const base = decoded.split('/').pop().split('?')[0];
+          return base.replace(/\.[^/.]+$/, ""); // 확장자 제거
+        } catch(e) {
+          return nameOrSrc;
+        }
+      };
+
+      const hairItems = wornImages.filter(img => img.type === 'hair').map(img => cleanFileName(img.name || img.src)).filter(Boolean);
+      const clothItems = wornImages.filter(img => img.type === 'clothing').map(img => cleanFileName(img.name || img.src)).filter(Boolean);
+      const accItems = wornImages.filter(img => img.type === 'accessory' || img.type === 'item').map(img => cleanFileName(img.name || img.src)).filter(Boolean);
+
+      const hasSelections = (hairItems.length > 0 || clothItems.length > 0 || accItems.length > 0);
+      
+      const hairListStr = hairItems.length > 0 ? hairItems.join(', ') : '선택하지 않음 (자연스러운 기본 상태)';
+      const clothListStr = clothItems.length > 0 ? clothItems.join(', ') : '선택하지 않음 (비워둔 상태)';
+      const accListStr = accItems.length > 0 ? accItems.join(', ') : '선택하지 않음 (비워둔 상태)';
+
+      const prompt = `당신은 브랜드 'remine(remain + mine)'의 가이드 '도리'입니다.
+"what remains is you. (남는 건 당신이다.)"
+당신은 타인의 시선이나 유행이 아닌, 사용자 본인만의 기준과 감각으로 스타일을 깊이 있게 관찰하고 분석해 주는 전문적이고 차분한 조력자입니다.
+
+[사용자 코디 정보]
+- 기본 스타일 테마: ${styleName}
+- Step 01. Hair: ${hairListStr}
+- Step 02. Clothes: ${clothListStr}
+- Step 03. Item: ${accListStr}
+- 첨부 이미지: ${String(userName)}님이 완성한 스타일링 모습
+
+[필수 작성 규칙 및 금지 사항]
+1. '도디', '오브제', '인형', '캐릭터'라는 단어는 본문에서 일절 사용하지 마세요.
+2. 진부한 도입부 금지:
+   - "의상을 살펴보았어요", "스타일을 살펴보니", "선택하신 코디는" 같은 뻔하고 의례적인 서두는 절대 쓰지 마세요.
+   - 첫 문장부터 곧바로 사용자가 매치한 구체적인 아이템의 라인, 실루엣, 텍스처, 그리고 전체적인 분위기로 직결되게 시작하세요.
+3. 깊이 있고 자세한 스타일 분석:
+   - 각 아이템(헤어의 컬감/기장, 옷의 핏/구조/디테일, 소품의 악센트)의 형태적 특징이 서로 어떻게 상호작용하여 균형과 무드를 형성하는지 시각적이고 구체적으로 자세히 서술하세요.
+   - 단순한 찬양이나 감탄이 아니라, "왜 이 조합이 ${styleName} 무드를 세련되고 정갈하게 완성하는지" 그 조형적·시각적 연결고리를 차분하게 설명해주세요.
+4. 어조:
+   - 과장이나 치켜세우기 없이 담백하고 단정하며, 침착하고 다정한 어조 (~해요, ~요, ~네요)를 유지하세요.
+   - ${String(userName)}님의 감각과 취향이 드러나는 지점을 깊이 있는 시선으로 짚어줍니다.
+${!hasSelections ? `
+[아이템을 전혀 선택하지 않고 비워둔 경우]
+- 장식을 일절 더하지 않은 미니멀함, 불필요한 것을 덜어내고 본연의 담백한 선과 면만 남겨둔 태도, 그리고 비워둠으로써 오히려 시작되는 ${String(userName)}님만의 여백에 대해 깊이 있고 차분하게 해석해주세요.
+` : `
+[아이템을 선택한 경우]
+- 파일명에 포함된 세부 키워드(예: '곱슬 짧은 머리', '오버핏 자켓', '각진 뿔테 안경' 등)와 시각적 요소의 형태적 조화를 정밀하고 풍성하게 분석해주세요.
+`}
+
+[글 작성 형식]
+- 전체 분량은 공백 포함 350자~480자 내외의 밀도 있고 완성도 높은 1~2개 문단으로 작성해주세요.
+- 답변의 가장 마지막 줄에는 반드시 이 코디에 어울리는 대표 컬러 코드 3개를 다음 형식으로 정확히 추가해주세요:
+[COLORS: #HEX1, #HEX2, #HEX3]`; 
+
+      const payload = { contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: "image/png", data: base64Data } }] }] }; 
+      
+      const callApiWithRetry = async (retries = 2, delay = 1000) => { 
+        try { 
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); 
+          if (!response.ok) {
+            const errorStatus = response.status;
+            const errorData = await response.text();
+            const err = new Error(`API 오류 (${errorStatus}): ${errorData}`);
+            err.status = errorStatus;
+            throw err;
+          }
+          const result = await response.json(); 
+          const text = result.candidates?.[0]?.content?.parts?.[0]?.text; 
+          if (!text) throw new Error('Empty response from AI'); return text; 
+        } catch (error) { 
+          if (error.status && [400, 403, 404, 429].includes(error.status)) {
+            throw error;
+          }
+          if (retries > 0) { 
+            await new Promise(res => setTimeout(res, delay)); 
+            return callApiWithRetry(retries - 1, delay * 2); 
+          } 
+          throw error; 
+        } 
+      }; 
+      
+      // Run both API request and minimum 5s wait animation concurrently
+      const [rawText] = await Promise.all([callApiWithRetry(), minDelayPromise]);
+      
+      // Parse colors from API response
+      let parsedColors = ['#a3b899', '#d3a4b0', '#dec5b1']; 
+      let cleanText = rawText;
+      const colorMatch = rawText.match(/\[COLORS:\s*(#[a-fA-F0-9]{6}),\s*(#[a-fA-F0-9]{6}),\s*(#[a-fA-F0-9]{6})\]/);
+      if (colorMatch) {
+        parsedColors = [colorMatch[1], colorMatch[2], colorMatch[3]];
+      cleanText = rawText.replace(/\[COLORS:.*\]/, '').trim();
+      }
+      
+      setAiDescription(cleanText);
+      setSymbolColors(parsedColors);
+      setCurrentPage('page9'); 
+    } catch (error) { 
+      // Make sure we wait for 5s animation to complete even on fast API errors
+      await minDelayPromise;
+      
+      setAiDescription(`[API/할당량 초과 또는 네트워크 오류: ${error.message}]\\n\\n구무가 ${String(userName)}님의 아름다운 스타일링을 보고 잠시 감동에 젖어 말이 늦어졌나 봐요. 선택하신 ${String(currentStyle.sub)}한 무드의 조화가 정말 탁월하시네요!`); 
+      setSymbolColors(['#a3b899', '#d3a4b0', '#dec5b1']);
+      setCurrentPage('page9'); 
+    } finally { 
+      setIsAiLoading(false); 
+    } 
+  };
+  const FittedCharacterPreview = ({ wornImages, containerWidth, containerHeight, padding = 40 }) => { if (!wornImages || wornImages.length === 0) return null; const char = wornImages.find(img => img.type === 'character') || wornImages[0]; const scale = Math.min((containerWidth - padding) / char.width, (containerHeight - padding) / char.height) * 2; const ox = (containerWidth / 2) - (char.width / 2 * scale) - 12, oy = (containerHeight / 2) - (char.height / 2 * scale) - 20; return (<div className="relative w-full h-full overflow-hidden flex items-center justify-center pointer-events-none"><div className="absolute" style={{ transform: `scale(${scale})`, transformOrigin: 'top left', left: `${ox}px`, top: `${oy}px`, width: `${char.width}px`, height: `${char.height}px` }}>{wornImages.sort((a, b) => a.zIndex - b.zIndex).map((img) => (<div key={img.id} style={{ position: 'absolute', left: `${img.x - char.x}px`, top: `${img.y - char.y}px`, width: `${img.width}px`, height: `${img.height}px`, zIndex: img.zIndex }}><img src={img.src} alt={img.type} className="w-full h-full block" /></div>))}</div></div>); };
+  const handleIntroFileUpload = (e, type, moodId = null) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    if (type === 'photo') {
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          const compressed = await compressImage(ev.target.result, 800);
+          setIntroData(prev => ({ ...prev, photos: [...prev.photos, { url: compressed, width: 48, height: 400 }] }));
+        };
+        reader.readAsDataURL(file);
+      });
+    } else {
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        let finalUrl = ev.target.result;
+        if (type !== 'video' && files[0].type && files[0].type.startsWith('image/')) {
+           finalUrl = await compressImage(finalUrl, 800);
+        }
+        if (moodId) setMoods(prev => prev.map(m => m.id === moodId ? { ...m, image: finalUrl } : m));
+        else setIntroData(prev => ({ ...prev, [type]: finalUrl }));
+      };
+      reader.readAsDataURL(files[0]);
+    }
+  };
+  const removePhoto = (index) => setIntroData(prev => ({ ...prev, photos: prev.photos.filter((_, i) => i !== index) }));
+  const updatePhotoStyle = (index, key, value) => setIntroData(prev => ({ ...prev, photos: prev.photos.map((p, i) => i === index ? { ...p, [key]: value } : p) }));
+  const scrollToRootTop = () => {
+    window.scrollTo(0, 0);
+    const rootEl = document.getElementById('root');
+    if (rootEl) rootEl.scrollTop = 0;
+    setScrollY(0);
+  };
+  const navigateTo = (page) => { setCurrentPage(page); scrollToRootTop(); if (page !== 3) setShowGridDirectly(false); };
+  
+  // 무드 보드 아이템 추가 (규격 자유 조절 지원)
+  const addItemToMood = (type, content = null, dimensions = null) => { 
+    if (!selectedMood) return; 
+    const moodId = selectedMood.id; 
+    let finalContent = content; 
+    if (!content) { 
+      if (type === 'text') finalContent = '내용을 입력하세요'; 
+      else if (type === 'image') finalContent = 'https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&w=800&q=80'; 
+      else if (type === 'video') finalContent = 'https://www.w3schools.com/html/mov_bbb.mp4'; 
+    } 
+    const newItem = { 
+      id: Date.now(), 
+      type, 
+      x: 50 + (Math.random() * 20), 
+      y: 150 + (Math.random() * 20), 
+      width: dimensions?.width || (type === 'text' ? 250 : 300), 
+      height: dimensions?.height || (type === 'text' ? 120 : 200), 
+      content: finalContent 
+    }; 
+    setMoodContents(prev => ({ ...prev, [moodId]: [...(prev[moodId] || []), newItem] })); 
+  };
+
+  const updateMoodItem = (itemId, updates) => { if (!selectedMood) return; const moodId = selectedMood.id; setMoodContents(prev => ({ ...prev, [moodId]: prev[moodId].map(item => item.id === itemId ? { ...item, ...updates } : item) })); };
+  const deleteMoodItem = (itemId) => { if (!selectedMood) return; const moodId = selectedMood.id; setMoodContents(prev => ({ ...prev, [moodId]: prev[moodId].filter(item => item.id !== itemId) })); };
+  useEffect(() => { if (userName && String(userName).trim()) { setTextData(prev => ({ ...prev, mood_header_title: { ...prev.mood_header_title, content: `${String(userName)}님은 어떤 무드가 가장 마음에 드시나요?` } })); } }, [userName]);
+  const startStylingSessionWithMood = (mood) => {
+    const moodIdPage3 = mood?.id || 1;
+    const initialMoodId = `5.${moodIdPage3}`;
+    const savedColor = layouts[initialMoodId]?.bgColor || '#ffffff';
+    setBgColor(savedColor);
+    setCurrentMoodId(initialMoodId);
+    setSelectedMood(mood);
+    setCurrentPage('styling');
+    scrollToRootTop();
+  };
+  const startStylingSession = () => {
+    startStylingSessionWithMood(selectedMood);
+  };
+
+  if (!isStateLoaded) return (
+    <div className="min-h-screen flex items-center justify-center bg-[#FDFDFD]">
+      <div className="flex flex-col items-center opacity-40">
+         <div className="w-10 h-10 border-4 border-gray-200 border-t-black rounded-full animate-spin mb-4" />
+         <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500">Loading State...</p>
+      </div>
+    </div>
+  );
+
+  if (currentPage === 1) return <WelcomeStep userName={userName} setUserName={setUserName} onNext={() => navigateTo(2)} isEditMode={isEditMode} setIsEditMode={setIsEditMode} onExport={handleExportData} onImport={handleImportData} />;
+  if (currentPage === 2) return <IntroStep onNext={() => navigateTo(3)} isEditMode={isEditMode} scrollY={scrollY} />;
+  if (currentPage === 3 || currentPage === 4) {
+    const scale = windowSize.width / 1620;
+    const layoutHeight = 2160;
+    return (
+      <div style={{ position: 'relative', width: '1620px', height: `${layoutHeight}px` }}>
+
+        {/* Render Page 3 in background */}
+        <div style={{ width: '100%', height: '100%', pointerEvents: currentPage === 4 ? 'none' : 'auto' }}>
+          <MoodStep moods={moods} scrollY={scrollY} textData={textData} onTextUpdate={(id, data) => setTextData(p => ({ ...p, [id]: data }))} onMoodClick={(mood) => { setSelectedMood(mood); navigateTo(4); }} onMoodSwipe={startStylingSessionWithMood} toggleLike={(e, id) => { e.stopPropagation(); setMoods(prev => prev.map(m => m.id === id ? { ...m, liked: !m.liked } : m)); }} handleFileUpload={handleIntroFileUpload} onBackToStart={handleGlobalReset} showGridOnly={currentPage === 4 ? true : showGridDirectly} isEditMode={isEditMode} userName={userName} layoutHeight={layoutHeight} />
+        </div>
+        {/* Render Page 4 on top if active */}
+        {currentPage === 4 && (
+          <div style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', zIndex: 100 }}>
+            <MoodDetailView mood={selectedMood} layoutHeight={layoutHeight} bgColor={selectedMood ? (layouts[`5.${selectedMood.id}`]?.bgColor || '#FDFDFD') : '#FDFDFD'} items={moodContents[selectedMood?.id] || []} onBack={() => { setShowGridDirectly(true); setCurrentPage(3); scrollToRootTop(); }} onNext={startStylingSession} addItem={addItemToMood} updateItem={updateMoodItem} deleteItem={deleteMoodItem} isEditMode={isEditMode} />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (currentPage === 'styling') {
+    const isExotic = currentMood.id === 8;
+    const clothingList = images.filter(img => img.type === 'clothing').sort((a, b) => a.zIndex - b.zIndex);
+    const scale = windowSize.width / 1620;
+    const layoutHeight = 2160;
+
+    if (isExotic && isStep5) {
+      const activeOption = getActiveHairOption();
+      const mainColor = '#ad2a3d';
+      const pageBg = '#b7b7bc';
+
+      return (
+        <div className="w-[1620px] relative overflow-hidden selection:bg-transparent" style={{ width: '1620px', height: `${layoutHeight}px`, backgroundColor: pageBg, touchAction: 'none' }}>
+          {/* Background Octagon Piece */}
+          <div style={getOctagonStyle(currentMood.id)} />
+          {/* Background Numbers */}
+          <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 5 }}>
+            <div style={{ position: 'absolute', top: '653.4308px', right: '671.9348px', fontSize: '20pt', color: '#575759', fontFamily: 'Presentation' }}>01</div>
+            <div style={{ position: 'absolute', top: '1096.4505px', right: '180.018px', fontSize: '20pt', color: '#575759', fontFamily: 'Presentation' }}>02</div>
+            <div style={{ position: 'absolute', bottom: '563.5451px', right: '180.018px', fontSize: '20pt', color: '#575759', fontFamily: 'Presentation' }}>03</div>
+            <div style={{ position: 'absolute', bottom: '253.2693px', right: '671.2168px', fontSize: '20pt', color: '#575759', fontFamily: 'Presentation' }}>04</div>
+            <div style={{ position: 'absolute', bottom: '563.5451px', left: '460.5802px', fontSize: '20pt', color: '#575759', fontFamily: 'Presentation' }}>05</div>
+            <div style={{ position: 'absolute', top: '1096.4505px', left: '460.5802px', fontSize: '20pt', color: '#575759', fontFamily: 'Presentation' }}>06</div>
+          </div>
+          {/* Top Header */}
+          <header className="absolute top-[73px] left-0 right-0 px-[70px] h-[40px] flex items-center justify-between z-20 pointer-events-none">
+            <div className="flex-1 flex justify-start pointer-events-auto">
+              <span style={{ fontSize: '20pt', fontWeight: 400, color: '#575759', fontFamily: 'Presentation' }}>
+                Chapter 02. 스타일 커스텀
+              </span>
+            </div>
+            <div className="flex justify-center shrink-0 mx-4 pointer-events-none">
+              <span style={{ fontSize: '20pt', fontWeight: 400, color: '#575759', fontFamily: 'Presentation' }}>
+                Step 01. Hair
+              </span>
+            </div>
+            <div className="flex-1 flex justify-end pointer-events-auto">
+              <svg width="390.35" height="26.31" viewBox="0 0 390.35 26.31" className="pointer-events-auto">
+                <rect x="0" y="0.04" width="390.35" height="26.27" fill="#d4d4d8" />
+                <rect x="0" y="0" width="130.12" height="26.35" fill={mainColor} />
+                <text x="65.06" y="13.15" textAnchor="middle" dominantBaseline="central" fontSize="20pt" fill="#d4d4d8" fontFamily="Presentation">Hair</text>
+              </svg>
+            </div>
+          </header>
+
+          {/* Sub Header / Title and Reset */}
+          <div className="absolute left-[70px] top-[170px] z-20 pointer-events-none">
+            <span className="block" style={{ fontSize: '30pt', fontWeight: 400, color: '#575759', lineHeight: 1.25, fontFamily: 'Presentation' }}>
+              {MOOD_TITLE_MAP[currentMood && currentMood.id ? parseInt(currentMood.id.split('.')[1]) : 8]?.ko}
+            </span>
+            <span className="block" style={{ fontSize: '100pt', fontWeight: 600, lineHeight: 1.25, color: mainColor, fontFamily: 'Presentation' }}>
+              {MOOD_TITLE_MAP[currentMood && currentMood.id ? parseInt(currentMood.id.split('.')[1]) : 8]?.en}
+            </span>
+          </div>
+
+          <div style={{ position: 'absolute', top: '135.0111px', right: '68.574px', zIndex: 20 }}>
+            <button
+              type="button"
+              onClick={resetToLastFixed}
+              title="되돌리기"
+              className="w-[94.07px] h-[94.07px] bg-transparent border-none hover:scale-105 active:scale-95 transition-transform flex items-center justify-center cursor-pointer p-0"
+            >
+              <img src="디자인!/새로고침.svg" alt="되돌리기" className="w-full h-full block" />
+            </button>
+          </div>
+
+          {/* Background Petal SVG - Raised to zIndex 15 so petals are on top of the interactive canvas overlay */}
+          <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 15 }}>
+            <svg width="1620" height="2160" viewBox="0 0 1620 2160" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {[
+                { angle: 0, num: 1 },
+                { angle: 60, num: 2 },
+                { angle: 120, num: 3 },
+                { angle: 180, num: 4 },
+                { angle: 240, num: 5 },
+                { angle: 300, num: 6 }
+              ].map(({ angle, num }) => (
+                <g key={num} transform={`rotate(${angle}, 810, 1180)`} className="pointer-events-auto">
+                  <path
+                    d="M 810,1180 Q 620,850 810,320 Q 1000,850 810,1180"
+                    fill="currentColor"
+                    className="cursor-pointer transition-all duration-300 hover:text-white/20 active:text-white/30"
+                    style={{
+                      color: '#ffffff',
+                      opacity: activeOption === num ? 0.35 : 0.08
+                    }}
+                    onClick={() => selectHairOption(num)}
+                  />
+                </g>
+              ))}
+            </svg>
+          </div>
+
+          {/* Upright Label Numbers - Raised to zIndex 20 */}
+          {[
+            { num: 1, x: 920, y: 480 },
+            { num: 2, x: 1420, y: 780 },
+            { num: 3, x: 1430, y: 1580 },
+            { num: 4, x: 920, y: 1880 },
+            { num: 5, x: 450, y: 1580 },
+            { num: 6, x: 440, y: 780 }
+          ].map(({ num, x, y }) => (
+            <div
+              key={num}
+              onClick={() => selectHairOption(num)}
+              className="absolute w-[80px] h-[80px] flex items-center justify-center text-[36px] font-bold font-mono transition-all duration-300 cursor-pointer select-none"
+              style={{
+                left: `${x - 40}px`,
+                top: `${y - 40}px`,
+                color: activeOption === num ? '#ffffff' : '#575759',
+                backgroundColor: activeOption === num ? mainColor : 'transparent',
+                borderRadius: '50%',
+                boxShadow: activeOption === num ? '0 8px 16px rgba(0,0,0,0.15)' : 'none',
+                zIndex: 20
+              }}
+            >
+              {String(num).padStart(2, '0')}
+            </div>
+          ))}
+
+          {/* Character Canvas - Full screen interactive overlay at zIndex 10 */}
+          <div
+            ref={canvasRef}
+            onMouseDown={handleCanvasStart}
+            onTouchStart={handleCanvasStart}
+            className="absolute inset-0 w-full h-full"
+            style={{ zIndex: 10, touchAction: 'none' }}
+          >
+            <div className="absolute left-[210px] top-[580px] w-[1200px] h-[1200px] pointer-events-none">
+              {/* Render Back Hair */}
+              {images.filter(img => img.type === 'hair' && img.zIndex === 0).map(img => (
+                <img
+                  key={img.id}
+                  src={img.src}
+                  className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                  style={{ zIndex: 0 }}
+                />
+              ))}
+
+              {/* Render Character Doll */}
+              {images.filter(img => img.type === 'character').map(img => (
+                <img
+                  key={img.id}
+                  src={img.src}
+                  className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                  style={{ zIndex: 1 }}
+                />
+              ))}
+
+              {/* Render Front Hair */}
+              {images.filter(img => img.type === 'hair' && img.zIndex === 5).map(img => (
+                <img
+                  key={img.id}
+                  src={img.src}
+                  className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                  style={{ zIndex: 5 }}
+                />
+              ))}
+
+              {/* Render Clothes and Accessories */}
+              {images.filter(img => img.type !== 'character' && img.type !== 'hair').map(img => (
+                <img
+                  key={img.id}
+                  src={img.src}
+                  className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                  style={{ zIndex: img.zIndex }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Edit Mode Upload Buttons */}
+          {isEditMode && (
+            <div className="absolute left-[70px] bottom-[150px] flex items-center gap-4 z-30 bg-white/80 backdrop-blur border border-gray-200 p-4 rounded-3xl shadow-lg pointer-events-auto">
+              <button
+                type="button"
+                onClick={deleteSelectedImage}
+                disabled={!selectedImageId || isLocked(images.find(i => i.id === selectedImageId))}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                  selectedImageId && !isLocked(images.find(i => i.id === selectedImageId))
+                    ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                    : 'bg-gray-100 text-gray-300 cursor-not-allowed opacity-50'
+                }`}
+              >
+                <Trash2 size={16} /> 삭제
+              </button>
+            </div>
+          )}
+
+          {/* Hidden File Inputs for Edit Mode */}
+          <input type="file" ref={charInputRef} onChange={(e) => handleImageUpload(e, 'character')} accept="image/*" className="hidden" />
+          <input type="file" ref={itemInputRef} onChange={(e) => handleImageUpload(e, 'hair')} accept="image/*" className="hidden" />
+
+          {/* Footer Logo and Next Button */}
+          {(!isStep5 || isEditMode) && (
+            <button
+              type="button"
+              onClick={() => {
+                setShowGridDirectly(true);
+                setCurrentPage(3);
+                scrollToRootTop();
+              }}
+              className="absolute transition-all active:scale-95 hover:opacity-90 cursor-pointer pointer-events-auto border-none bg-transparent p-0"
+              style={{ bottom: '78.0622px', left: '68.6687px', width: '94.0706px', height: '94.0706px', zIndex: 150 }}
+            >
+              <svg viewBox="0 0 151.03 151.03" style={{ width: '100%', height: '100%', transform: 'scaleX(-1)' }}>
+                <path fill="#ededf2" d="M151.03,67.82l-31.03-10.74,14.35-29.53c-5.46-5.46-5.41-5.41-10.88-10.88l-29.53,14.35L83.2,0c-7.73,0-7.65,0-15.38,0l-10.74,31.03-29.53-14.35c-5.46,5.46-5.41,5.41-10.88,10.88l14.35,29.53L0,67.82c0,7.73,0,7.65,0,15.38l31.03,10.74-14.35,29.53c5.46,5.46,5.41,5.41,10.88,10.88l29.53-14.35,10.74,31.03c7.73,0,7.65,0,15.38,0l10.74-31.03,29.53,14.35c5.46-5.46,5.41-5.41,10.88-10.88l-14.35-29.53,31.03-10.74c0-7.73,0-7.65,0-15.38Z"/>
+                <path fill="#575759" d="M83.76,59.35v14.98h-48.7v2.38h48.7v14.98l26.44-9.15v-14.03l-26.44-9.15Z"/>
+              </svg>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => handleNavigation(currentMood.next)}
+            disabled={!currentMood.next}
+            className="absolute transition-all active:scale-95 hover:opacity-90 cursor-pointer pointer-events-auto border-none bg-transparent p-0"
+            style={{ bottom: '78.0622px', right: '68.6687px', width: '94.0706px', height: '94.0706px', zIndex: 150 }}
+          >
+            <svg viewBox="0 0 151.03 151.03" style={{ width: '100%', height: '100%' }}>
+              <path fill="#ededf2" d="M151.03,67.82l-31.03-10.74,14.35-29.53c-5.46-5.46-5.41-5.41-10.88-10.88l-29.53,14.35L83.2,0c-7.73,0-7.65,0-15.38,0l-10.74,31.03-29.53-14.35c-5.46,5.46-5.41,5.41-10.88,10.88l14.35,29.53L0,67.82c0,7.73,0,7.65,0,15.38l31.03,10.74-14.35,29.53c5.46,5.46,5.41,5.41,10.88,10.88l29.53-14.35,10.74,31.03c7.73,0,7.65,0,15.38,0l10.74-31.03,29.53,14.35c5.46-5.46,5.41-5.41,10.88-10.88l-14.35-29.53,31.03-10.74c0-7.73,0-7.65,0-15.38Z"/>
+              <path fill="#575759" d="M83.76,59.35v14.98h-48.7v2.38h48.7v14.98l26.44-9.15v-14.03l-26.44-9.15Z"/>
+            </svg>
+          </button>
+          {/* Bottom Logo */}
+          <div
+            className="absolute pointer-events-none"
+            style={{ bottom: '65.6142px', left: '50%', transform: 'translateX(-50%)', width: '115.7675px', height: '23.8725px', zIndex: 150 }}
+          >
+            <svg viewBox="0 0 115.77 23.84" style={{ width: '100%', height: '100%' }}>
+              <path fill="#575759" d="M70.45,1.71l-.77-.27.36-.73-.27-.27-.73.36-.27-.77h-.38l-.27.77-.73-.36-.27.27.36.73-.77.27v.38l.77.27-.36.73c.14.14.13.13.27.27l.73-.36.27.77h.38l.27-.77.73.36c.14-.14.13-.13.27-.27l-.36-.73.77-.27v-.38Z"/>
+              <path fill="#575759" d="M28.32,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C30.5,4.34,28.03.38,22.69,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88.17,4.51,3.21,10.66,11.24,10.66,6.93,0,10.06-5.29,10.28-6.17M14.04,9.52c.17-2.03,2.61-6.24,7.26-6.39,6.33,0,7.26,5.11,7.26,6.39h-14.51Z"/>
+              <path fill="#575759" d="M111.79,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C113.98,4.34,111.5.38,106.16,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88s3.21,10.66,11.24,10.66c6.93,0,10.06-5.29,10.28-6.17M97.51,9.52c.17-2.03,2.61-6.24,7.26-6.39,7.26,0,7.26,5.11,7.26,6.39h-14.51Z"/>
+              <rect fill="#575759" x="66.69" y="6.47" width="3.76" height="17.37"/>
+              <path fill="#575759" d="M83,0C80.01,0,78.33,1.55,77.33,2.53V0h-3.76v23.84h3.76v-13c0-3.82,1.62-7.71,6.14-7.71,3.46,0,4.76,3.4,4.76,7.85v12.86h3.76v-12.86C91.98,1.27,86.37,0,83,0Z"/>
+              <path fill="#575759" d="M56.41,0c-2.88,0-5.17,1.9-6.02,4.02C48.63.61,46.34,0,44.04,0,42.08,0,40.21,1.3,39.2,2.86V0h-3.76v23.84h3.76v-15.15c0-2.93,2.18-5.55,4.87-5.55,2.24,0,3.57,2.03,3.57,5.55v15.15h3.76v-15.15c0-2.42,2.06-5.55,4.59-5.55s3.8,2.16,3.8,5.55v15.15h3.76v-12.86C63.55,9.19,63.97,0,56.41,0Z"/>
+              <path fill="#575759" d="M10.33.59c-.69-.2-1.4-.31-2.12-.31-1.84,0-3.57,1.2-4.44,2.78V0H0v23.84h3.76v-13.64c0-4.21,2.51-5.77,4.7-6.23.6-.13,1.23-.08,1.86.09V.59Z"/>
+            </svg>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="w-[1620px] h-[2160px] relative transition-colors duration-700 ease-in-out font-sans select-none overflow-hidden" style={{ width: '1620px', height: '2160px', backgroundColor: '#b7b7bc' }}>
+        {/* Background Octagon Piece */}
+        <div style={getOctagonStyle(currentMood.id)} />
+        {/* Background Numbers */}
+        {(isStep5 || isStep6) && (
+          <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 5 }}>
+            <div style={{ position: 'absolute', top: '653.4308px', right: '671.9348px', fontSize: '20pt', color: '#575759', fontFamily: 'Presentation' }}>01</div>
+            <div style={{ position: 'absolute', top: '1096.4505px', right: '180.018px', fontSize: '20pt', color: '#575759', fontFamily: 'Presentation' }}>02</div>
+            <div style={{ position: 'absolute', bottom: '563.5451px', right: '180.018px', fontSize: '20pt', color: '#575759', fontFamily: 'Presentation' }}>03</div>
+            <div style={{ position: 'absolute', bottom: '253.2693px', right: '671.2168px', fontSize: '20pt', color: '#575759', fontFamily: 'Presentation' }}>04</div>
+            <div style={{ position: 'absolute', bottom: '563.5451px', left: '460.5802px', fontSize: '20pt', color: '#575759', fontFamily: 'Presentation' }}>05</div>
+            <div style={{ position: 'absolute', top: '1096.4505px', left: '460.5802px', fontSize: '20pt', color: '#575759', fontFamily: 'Presentation' }}>06</div>
+          </div>
+        )}
+        {/* Background Numbers for Step 7 */}
+        {isStep7 && (
+          <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 5 }}>
+            <div style={{ position: 'absolute', top: '654.4028px', right: '671.218px', fontSize: '20pt', color: '#575759', fontFamily: 'Presentation' }}>01</div>
+            <div style={{ position: 'absolute', top: '1337.9676px', right: '178.093px', fontSize: '20pt', color: '#575759', fontFamily: 'Presentation' }}>02</div>
+            <div style={{ position: 'absolute', top: '1337.9676px', left: '454.9173px', fontSize: '20pt', color: '#575759', fontFamily: 'Presentation' }}>03</div>
+          </div>
+        )}
+        
+        {/* Canvas Area - Stretched to fill the entire 1620x2160 screen area (no borders or overflow-hidden clipping) */}
+        <div className="absolute inset-0 w-full h-full z-10" style={{ touchAction: 'none' }}>
+          <div ref={canvasRef} onMouseDown={handleCanvasStart} onTouchStart={handleCanvasStart} onMouseMove={handleCanvasHover} style={{ transform: `scale(${zoom})`, transformOrigin: 'center center', transition: interactingImageId ? 'none' : 'transform 0.2s ease-out' }} className="absolute inset-0 w-full h-full">
+            {images.sort((a, b) => a.zIndex - b.zIndex).map((img) => (
+              <div key={img.id} style={{ position: 'absolute', left: `${img.x}px`, top: `${img.y}px`, width: `${img.width}px`, height: `${img.height}px`, zIndex: img.zIndex, pointerEvents: 'none' }}>
+                <img src={img.src} alt={img.type} className="w-full h-full block transition-opacity opacity-100" />
+              </div>
+            ))}
+          </div>
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm z-50">
+              <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
+            </div>
+          )}
+        </div>
+
+        <input type="file" ref={charInputRef} onChange={(e) => handleImageUpload(e, 'character')} accept="image/*" multiple className="hidden" />
+        <input type="file" ref={itemInputRef} onChange={(e) => handleImageUpload(e, isStep7 ? 'accessory' : (isStep6 ? 'clothing' : 'hair'))} accept="image/*" multiple className="hidden" />
+
+        {/* Top Header - absolute positioned */}
+        <header className="absolute top-[73px] left-0 right-0 px-[70px] h-[40px] flex items-center justify-between z-20 pointer-events-none">
+          <div className="flex-1 flex justify-start pointer-events-auto items-center gap-4">
+            <span style={{ fontSize: '20pt', fontWeight: 400, color: '#575759', fontFamily: 'Presentation' }}>
+              Chapter 02. 스타일 커스텀
+            </span>
+            {isStep6 && isEditMode && (
+              <div className="flex items-center gap-4 bg-white/80 backdrop-blur-md border border-gray-200 rounded-2xl px-4 py-2 overflow-hidden max-w-2xl shadow-sm">
+                <div className="flex flex-col items-center gap-1 text-gray-400 shrink-0 border-r border-gray-100 pr-3">
+                  <div className="flex items-center gap-2">
+                    <Layers size={18} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Layer</span>
+                  </div>
+                  <button type="button" onClick={() => { setIsGroupingMode(!isGroupingMode); setGroupSelections([]); }} className={`flex items-center gap-1 px-2 py-0.5 mt-0.5 rounded transition-colors text-[9px] font-bold uppercase tracking-wider ${isGroupingMode ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
+                    <Link size={10} /> {isGroupingMode ? '취소' : '묶기'}
+                  </button>
+                </div>
+                <div className="flex gap-3 overflow-x-auto no-scrollbar py-1 items-center">
+                  {clothingList.length === 0 ? (
+                    <span className="text-xs text-gray-300 font-medium italic">옷을 추가하면 레이어가 표시됩니다</span>
+                  ) : (
+                    clothingList.map((cloth, idx) => (
+                      <div key={cloth.id} onClick={() => { if (isGroupingMode) setGroupSelections(prev => prev.includes(cloth.id) ? prev.filter(id => id !== cloth.id) : [...prev, cloth.id]); else setSelectedImageId(cloth.id); }} className={`relative flex items-center gap-1 group transition-all p-1 rounded-lg ${!isGroupingMode && selectedImageId === cloth.id ? 'bg-blue-50 ring-1 ring-blue-200' : 'hover:bg-gray-50'} ${isGroupingMode && groupSelections.includes(cloth.id) ? 'bg-blue-100 ring-2 ring-blue-400' : ''}`}>
+                        {!isGroupingMode && (
+                          <button type="button" onClick={(e) => { e.stopPropagation(); moveLayerInList(cloth.id, 'left'); }} disabled={idx === 0} className={`p-0.5 rounded hover:bg-white transition-opacity ${idx === 0 ? 'opacity-0' : 'opacity-40 hover:opacity-100'}`}>
+                            <ChevronLeft size={14} />
+                          </button>
+                        )}
+                        <div className="w-10 h-10 bg-gray-100 rounded-md overflow-hidden border border-gray-200 cursor-pointer relative">
+                          <img src={cloth.src} className="w-full h-full object-contain" alt="clothing" />
+                          {cloth.groupId && !isGroupingMode && (
+                            <div className="absolute bottom-0 right-0 p-0.5 bg-black/60 text-white rounded-tl-sm shadow-sm">
+                              <Link size={8} />
+                            </div>
+                          )}
+                          {isGroupingMode && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/10 backdrop-blur-[1px]">
+                              {groupSelections.includes(cloth.id) ? (
+                                <CheckSquare size={16} className="text-blue-600 bg-white rounded-sm shadow-sm" />
+                              ) : (
+                                <Square size={16} className="text-white drop-shadow-md" />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        {!isGroupingMode && (
+                          <button type="button" onClick={(e) => { e.stopPropagation(); moveLayerInList(cloth.id, 'right'); }} disabled={idx === clothingList.length - 1} className={`p-0.5 rounded hover:bg-white transition-opacity ${idx === clothingList.length - 1 ? 'opacity-0' : 'opacity-40 hover:opacity-100'}`}>
+                            <ChevronRight size={14} />
+                          </button>
+                        )}
+                      </div>
+                    ))
+                  )}
+                  {isGroupingMode && groupSelections.length >= 2 && (
+                    <button type="button" onClick={confirmGroup} className="ml-2 flex items-center gap-1 px-3 py-1.5 bg-black text-white rounded-full text-[10px] font-bold shrink-0 animate-in fade-in zoom-in shadow-md hover:bg-gray-800">
+                      합치기<Check size={12}/>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-center shrink-0 mx-4 pointer-events-none">
+            <span style={{ fontSize: '20pt', fontWeight: 400, color: '#575759', fontFamily: 'Presentation' }}>
+              {isStep5 ? 'Step 01. Hair' : (isStep6 ? 'Step 02. Clothes' : 'Step 03. Accessory')}
+            </span>
+          </div>
+
+          <div className="flex-1 flex justify-end gap-2 md:gap-3 overflow-x-auto pb-1 sm:pb-0 pointer-events-auto">
+            {!isEditMode && (
+              <svg width="390.35" height="26.31" viewBox="0 0 390.35 26.31" className="pointer-events-auto">
+                <rect x="0" y="0.04" width="390.35" height="26.27" fill="#d4d4d8" />
+                <rect x="0" y="0" width={isStep5 ? "130.12" : (isStep6 ? "260.23" : "390.35")} height="26.35" fill={STYLE_MAIN_COLORS[currentMood && currentMood.id ? parseInt(currentMood.id.split('.')[1]) : 1] || '#ad2a3d'} />
+                {isStep5 && <text x="65.06" y="13.15" textAnchor="middle" dominantBaseline="central" fontSize="20pt" fill="#d4d4d8" fontFamily="Presentation">Hair</text>}
+                {isStep6 && <text x="195.17" y="13.15" textAnchor="middle" dominantBaseline="central" fontSize="20pt" fill="#d4d4d8" fontFamily="Presentation">Clothes</text>}
+                {isStep7 && <text x="325.29" y="13.15" textAnchor="middle" dominantBaseline="central" fontSize="20pt" fill="#d4d4d8" fontFamily="Presentation">Item</text>}
+              </svg>
+            )}
+
+            {isEditMode && selectedImageId && images.find(i => i.id === selectedImageId)?.groupId && !isLocked(images.find(i => i.id === selectedImageId)) && (
+              <button type="button" onClick={() => handleUngroup(images.find(i => i.id === selectedImageId).groupId)} className="flex items-center gap-1.5 px-3 py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-sm bg-gray-100 hover:bg-gray-200 text-gray-600 transition-all shrink-0 active:scale-95 border border-gray-200">
+                <Unlink size={16} />
+                <span className="hidden md:inline">그룹 해제</span>
+              </button>
+            )}
+            {isEditMode && (
+              <button type="button" onClick={deleteSelectedImage} disabled={!selectedImageId || isLocked(images.find(i => i.id === selectedImageId))} title="삭제" className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all shrink-0 ${selectedImageId && !isLocked(images.find(i => i.id === selectedImageId)) ? 'bg-red-50 text-red-500 hover:bg-red-500 hover:text-white shadow-md active:scale-95' : 'bg-gray-100 text-gray-300 cursor-not-allowed opacity-50'}`}>
+                <Trash2 size={18} />
+                <span className="hidden md:inline">삭제</span>
+              </button>
+            )}
+            {isEditMode && (
+              <button type="button" onClick={toggleLayoutLock} className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-md transition-all active:scale-95 shrink-0 ${isFixedMode ? 'bg-amber-500 text-white' : 'bg-blue-600 text-white'}`}>
+                {isFixedMode ? <PinOff size={18} /> : <Pin size={18} />}
+                <span className="hidden md:inline">{isFixedMode ? '저장됨' : '픽스하기'}</span>
+              </button>
+            )}
+            {isStep5 && isEditMode && (
+              <button type="button" onClick={() => charInputRef.current.click()} className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-3 sm:px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-sm hover:bg-gray-50 transition-all active:scale-95 shrink-0">
+                <User size={18} className="text-blue-500" />
+                <span className="hidden md:inline">캐릭터</span>
+              </button>
+            )}
+            {isEditMode && (
+              <button type="button" onClick={() => itemInputRef.current.click()} className="flex items-center gap-2 bg-black text-white px-3 sm:px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-lg hover:bg-gray-800 transition-all active:scale-95 shrink-0">
+                <Sparkles size={18} className="text-yellow-400" />
+                <span className="hidden md:inline">{isStep7 ? '소품' : (isStep6 ? '옷' : '헤어')}</span>
+              </button>
+            )}
+          </div>
+        </header>
+
+        {/* Title Overlay - absolute positioned */}
+        <div className="absolute left-[70px] top-[170px] z-20 pointer-events-none">
+          <span className="block" style={{ fontSize: '30pt', fontWeight: 400, color: '#575759', lineHeight: 1.25, fontFamily: 'Presentation' }}>
+            {MOOD_TITLE_MAP[currentMood && currentMood.id ? parseInt(currentMood.id.split('.')[1]) : 1]?.ko}
+          </span>
+          <span className="block" style={{ fontSize: '100pt', fontWeight: 600, lineHeight: 1.25, color: STYLE_MAIN_COLORS[currentMood && currentMood.id ? parseInt(currentMood.id.split('.')[1]) : 1], fontFamily: 'Presentation' }}>
+            {MOOD_TITLE_MAP[currentMood && currentMood.id ? parseInt(currentMood.id.split('.')[1]) : 1]?.en}
+          </span>
+        </div>
+        <div style={{ position: 'absolute', top: '135.0111px', right: '68.574px', zIndex: 20 }}>
+          <button
+            type="button"
+            onClick={resetToLastFixed}
+            title="되돌리기"
+            className="w-[94.07px] h-[94.07px] bg-transparent border-none hover:scale-105 active:scale-95 transition-transform flex items-center justify-center cursor-pointer p-0"
+          >
+            <img src="디자인!/새로고침.svg" alt="되돌리기" className="w-full h-full block" />
+          </button>
+        </div>
+
+        {/* Bottom Footer - custom buttons */}
+        {(!isStep5 || isEditMode) && (
+          <button
+            type="button"
+            onClick={() => {
+              if (isStep5) {
+                setShowGridDirectly(true);
+                setCurrentPage(3);
+                scrollToRootTop();
+              } else {
+                handleNavigation(currentMood.prev);
+              }
+            }}
+            className="absolute transition-all active:scale-95 hover:opacity-90 cursor-pointer pointer-events-auto border-none bg-transparent p-0"
+            style={{ bottom: '78.0622px', left: '68.6687px', width: '94.0706px', height: '94.0706px', zIndex: 150 }}
+          >
+            <svg viewBox="0 0 151.03 151.03" style={{ width: '100%', height: '100%', transform: 'scaleX(-1)' }}>
+              <path fill="#ededf2" d="M151.03,67.82l-31.03-10.74,14.35-29.53c-5.46-5.46-5.41-5.41-10.88-10.88l-29.53,14.35L83.2,0c-7.73,0-7.65,0-15.38,0l-10.74,31.03-29.53-14.35c-5.46,5.46-5.41,5.41-10.88,10.88l14.35,29.53L0,67.82c0,7.73,0,7.65,0,15.38l31.03,10.74-14.35,29.53c5.46,5.46,5.41,5.41,10.88,10.88l29.53-14.35,10.74,31.03c7.73,0,7.65,0,15.38,0l10.74-31.03,29.53,14.35c5.46-5.46,5.41-5.41,10.88-10.88l-14.35-29.53,31.03-10.74c0-7.73,0-7.65,0-15.38Z"/>
+              <path fill="#575759" d="M83.76,59.35v14.98h-48.7v2.38h48.7v14.98l26.44-9.15v-14.03l-26.44-9.15Z"/>
+            </svg>
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={() => handleNavigation(currentMood.next)}
+          disabled={!currentMood.next}
+          className="absolute transition-all active:scale-95 hover:opacity-90 cursor-pointer pointer-events-auto border-none bg-transparent p-0"
+          style={{ bottom: '78.0622px', right: '68.6687px', width: '94.0706px', height: '94.0706px', zIndex: 150 }}
+        >
+          <svg viewBox="0 0 151.03 151.03" style={{ width: '100%', height: '100%' }}>
+            <path fill="#ededf2" d="M151.03,67.82l-31.03-10.74,14.35-29.53c-5.46-5.46-5.41-5.41-10.88-10.88l-29.53,14.35L83.2,0c-7.73,0-7.65,0-15.38,0l-10.74,31.03-29.53-14.35c-5.46,5.46-5.41,5.41-10.88,10.88l14.35,29.53L0,67.82c0,7.73,0,7.65,0,15.38l31.03,10.74-14.35,29.53c5.46,5.46,5.41,5.41,10.88,10.88l29.53-14.35,10.74,31.03c7.73,0,7.65,0,15.38,0l10.74-31.03,29.53,14.35c5.46-5.46,5.41-5.41,10.88-10.88l-14.35-29.53,31.03-10.74c0-7.73,0-7.65,0-15.38Z"/>
+            <path fill="#575759" d="M83.76,59.35v14.98h-48.7v2.38h48.7v14.98l26.44-9.15v-14.03l-26.44-9.15Z"/>
+          </svg>
+        </button>
+
+        {/* Bottom Logo */}
+        <div
+          className="absolute pointer-events-none"
+          style={{ bottom: '65.6142px', left: '50%', transform: 'translateX(-50%)', width: '115.7675px', height: '23.8725px', zIndex: 150 }}
+        >
+          <svg viewBox="0 0 115.77 23.84" style={{ width: '100%', height: '100%' }}>
+            <path fill="#575759" d="M70.45,1.71l-.77-.27.36-.73-.27-.27-.73.36-.27-.77h-.38l-.27.77-.73-.36-.27.27.36.73-.77.27v.38l.77.27-.36.73c.14.14.13.13.27.27l.73-.36.27.77h.38l.27-.77.73.36c.14-.14.13-.13.27-.27l-.36-.73.77-.27v-.38Z"/>
+            <path fill="#575759" d="M28.32,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C30.5,4.34,28.03.38,22.69,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88.17,4.51,3.21,10.66,11.24,10.66,6.93,0,10.06-5.29,10.28-6.17M14.04,9.52c.17-2.03,2.61-6.24,7.26-6.39,6.33,0,7.26,5.11,7.26,6.39h-14.51Z"/>
+            <path fill="#575759" d="M111.79,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C113.98,4.34,111.5.38,106.16,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88s3.21,10.66,11.24,10.66c6.93,0,10.06-5.29,10.28-6.17M97.51,9.52c.17-2.03,2.61-6.24,7.26-6.39,7.26,0,7.26,5.11,7.26,6.39h-14.51Z"/>
+            <rect fill="#575759" x="66.69" y="6.47" width="3.76" height="17.37"/>
+            <path fill="#575759" d="M83,0C80.01,0,78.33,1.55,77.33,2.53V0h-3.76v23.84h3.76v-13c0-3.82,1.62-7.71,6.14-7.71,3.46,0,4.76,3.4,4.76,7.85v12.86h3.76v-12.86C91.98,1.27,86.37,0,83,0Z"/>
+            <path fill="#575759" d="M56.41,0c-2.88,0-5.17,1.9-6.02,4.02C48.63.61,46.34,0,44.04,0,42.08,0,40.21,1.3,39.2,2.86V0h-3.76v23.84h3.76v-15.15c0-2.93,2.18-5.55,4.87-5.55,2.24,0,3.57,2.03,3.57,5.55v15.15h3.76v-15.15c0-2.42,2.06-5.55,4.59-5.55s3.8,2.16,3.8,5.55v15.15h3.76v-12.86C63.55,9.19,63.97,0,56.41,0Z"/>
+            <path fill="#575759" d="M10.33.59c-.69-.2-1.4-.31-2.12-.31-1.84,0-3.57,1.2-4.44,2.78V0H0v23.84h3.76v-13.64c0-4.21,2.51-5.77,4.7-6.23.6-.13,1.23-.08,1.86.09V.59Z"/>
+          </svg>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentPage === 'page8') {
+    const wornImages = getWornImages();
+    const char = wornImages.find(img => img.type === 'character') || { x: 376, y: 672, width: 816, height: 816 };
+    const scale = 1228.4071 / char.width;
+
+    return (
+      <div className="min-h-screen w-full flex flex-col relative overflow-hidden transition-colors duration-500" style={{ backgroundColor: '#b7b7bc' }}>
+        {isAiLoading && currentPage !== 'page9' && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-white/60 backdrop-blur-xl animate-in fade-in duration-500">
+            <style>{`
+              @keyframes waitPulse {
+                0%, 100% { opacity: 1; }
+                33% { opacity: 0.15; }
+              }
+              .wait-oct-1 { animation: waitPulse 1.8s infinite ease-in-out; animation-delay: 0s; }
+              .wait-oct-2 { animation: waitPulse 1.8s infinite ease-in-out; animation-delay: 0.6s; }
+              .wait-oct-3 { animation: waitPulse 1.8s infinite ease-in-out; animation-delay: 1.2s; }
+            `}</style>
+            <div
+              className="absolute pointer-events-none"
+              style={{
+                left: '50%',
+                top: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '306.50px',
+                height: '227.0952px'
+              }}
+            >
+              <svg viewBox="0 0 307.95 228.17" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                <path className="wait-oct-1" fill="#575759" d="M112.03,15.4l-7.05-2.44,3.26-6.71c-1.24-1.24-1.23-1.23-2.47-2.47l-6.71,3.26L96.62,0c-1.76,0-1.74,0-3.49,0l-2.44,7.05-6.71-3.26c-1.24,1.24-1.23,1.23-2.47,2.47l3.26,6.71-7.05,2.44v3.49s7.05,2.44,7.05,2.44l-3.26,6.71c1.24,1.24,1.23,1.23,2.47,2.47l6.71-3.26,2.44,7.05c1.76,0,1.74,0,3.49,0l2.44-7.05,6.71,3.26c1.24-1.24,1.23-1.23,2.47-2.47l-3.26-6.71,7.05-2.44c0-1.76,0-1.74,0-3.49Z"/>
+                <path className="wait-oct-2" fill="#575759" d="M171.41,15.4l-7.05-2.44,3.26-6.71c-1.24-1.24-1.23-1.23-2.47-2.47l-6.71,3.26L156,0c-1.76,0-1.74,0-3.49,0l-2.44,7.05-6.71-3.26c-1.24,1.24-1.23,1.23-2.47,2.47l3.26,6.71-7.05,2.44v3.49s7.05,2.44,7.05,2.44l-3.26,6.71c1.24,1.24,1.23,1.23,2.47,2.47l6.71-3.26,2.44,7.05c1.76,0,1.74,0,3.49,0l2.44-7.05,6.71,3.26c1.24-1.24,1.23-1.23,2.47-2.47l-3.26-6.71,7.05-2.44c0-1.76,0-1.74,0-3.49Z"/>
+                <path className="wait-oct-3" fill="#575759" d="M230.79,15.4l-7.05-2.44,3.26-6.71c-1.24-1.24-1.23-1.23-2.47-2.47l-6.71,3.26L215.38,0c-1.76,0-1.74,0-3.49,0l-2.44,7.05-6.71-3.26c-1.24,1.24-1.23,1.23-2.47,2.47l3.26,6.71-7.05,2.44v3.49s7.05,2.44,7.05,2.44l-3.26,6.71c1.24,1.24,1.23,1.23,2.47,2.47l6.71-3.26,2.44,7.05c1.76,0,1.74,0,3.49,0l2.44-7.05,6.71,3.26c1.24-1.24,1.23-1.23,2.47-2.47l-3.26-6.71,7.05-2.44c0-1.76,0-1.74,0-3.49Z"/>
+                <text
+                  textAnchor="middle"
+                  x="153.975"
+                  y="112"
+                  fill="#575759"
+                  fontFamily="Presentation"
+                  fontSize="42px"
+                  fontWeight="400"
+                >
+                  {String(userName)}님의
+                </text>
+                <text
+                  textAnchor="middle"
+                  x="153.975"
+                  y="175"
+                  fill="#575759"
+                  fontFamily="Presentation"
+                  fontSize="42px"
+                  fontWeight="400"
+                >
+                  스타일을 분석 중이에요
+                </text>
+                <text fill="#575759" fontFamily="Presentation" fontSize="20px" fontWeight="400" transform="translate(70 227.1)"><tspan x="0" y="0">약 10초 정도 소요됩니다</tspan></text>
+              </svg>
+            </div>
+          </div>
+        )}
+        {/* Title Question */}
+        <h1
+          className="absolute z-10 animate-in fade-in slide-in-from-top-4 duration-700 select-none text-left"
+          style={{
+            position: 'absolute',
+            top: '173.4829px',
+            left: '72.585px',
+            fontSize: '50pt',
+            fontWeight: 800,
+            color: STYLE_MAIN_COLORS[currentMood && currentMood.id ? parseInt(currentMood.id.split('.')[1]) : 1] || '#ad2a3d',
+            fontFamily: 'Presentation',
+            lineHeight: 1.25,
+            margin: 0
+          }}
+        >
+          {String(userName)}님의 도디를<br />이렇게 완성할까요?
+        </h1>
+
+        <div className="fixed top-0 left-0 -z-50 opacity-1 pointer-events-none" style={{ transform: 'translateX(-3000px)' }}><div ref={hiddenCaptureRef} className="w-[320px] h-[448px] bg-transparent"><FittedCharacterPreview wornImages={wornImages} containerWidth={320} containerHeight={448} padding={60} /></div></div>
+        <div className="absolute pointer-events-none" style={{ left: '171.3642px', top: '456.8726px', width: '1228.4071px', height: '1228.4071px' }}>
+          {wornImages.sort((a, b) => a.zIndex - b.zIndex).map((img) => (
+            <div
+              key={img.id}
+              style={{
+                position: 'absolute',
+                left: `${(img.x - char.x) * scale}px`,
+                top: `${(img.y - char.y) * scale}px`,
+                width: `${img.width * scale}px`,
+                height: `${img.height * scale}px`,
+                zIndex: img.zIndex
+              }}
+            >
+              <img src={img.src} alt={img.type} className="w-full h-full block" />
+            </div>
+          ))}
+        </div>
+        {/* No button */}
+        <button
+          type="button"
+          onClick={handleRetryStyling}
+          className="absolute transition-all active:scale-95 hover:opacity-90 cursor-pointer pointer-events-auto border-none bg-transparent p-0"
+          style={{ left: '125.3478px', bottom: '152.6892px', width: '594.47px', height: '176.18px', zIndex: 150 }}
+        >
+          <svg viewBox="0 0 594.47 176.18" style={{ width: '100%', height: '100%' }}>
+            <rect fill="#c1c1c6" x="0" width="594.47" height="176.18" rx="40" ry="40"/>
+            <text textAnchor="middle" x="297.235" y="87.99" fill="#575759" fontFamily="Presentation" fontSize="50px" fontWeight="700">아니요</text>
+            <text textAnchor="middle" x="297.235" y="138.32" fill="#575759" fontFamily="Presentation" fontSize="30px" fontWeight="500">다시 할게요</text>
+          </svg>
+        </button>
+
+        {/* Yes button */}
+        <button
+          type="button"
+          onClick={fetchAiDescription}
+          disabled={isAiLoading}
+          className="absolute transition-all active:scale-95 hover:opacity-90 cursor-pointer pointer-events-auto border-none bg-transparent p-0 disabled:opacity-50"
+          style={{ right: '125.3478px', bottom: '152.6892px', width: '594.47px', height: '176.18px', zIndex: 150 }}
+        >
+          <svg viewBox="0 0 594.47 176.18" style={{ width: '100%', height: '100%' }}>
+            <rect fill="#c1c1c6" x="0" width="594.47" height="176.18" rx="40" ry="40"/>
+            <text textAnchor="middle" x="297.235" y="87.99" fill="#575759" fontFamily="Presentation" fontSize="50px" fontWeight="700">네</text>
+            <text textAnchor="middle" x="297.235" y="138.32" fill="#575759" fontFamily="Presentation" fontSize="30px" fontWeight="500">이렇게 완성할게요</text>
+          </svg>
+        </button>
+      </div>
+    );
+  }
+
+
+  if (currentPage === 'page9') {
+    const moodIndex = selectedMood && selectedMood.id ? parseInt(selectedMood.id) : 1;
+    const styleColor = '#b7b7bc'; // Third brand color
+    const wornImages = getWornImages(); 
+    const char = wornImages.find(img => img.type === 'character') || { x: 376, y: 672, width: 816, height: 816 };
+    const scale = 564.8277 / char.width;
+
+    const getSelectedNumbersString = (type) => {
+      const items = wornImages.filter(img => img.type === type);
+      const nums = items
+        .map(img => {
+          const nameToSearch = img.name || (img.src && !img.src.startsWith('data:') ? img.src : '');
+          const matches = nameToSearch.match(/(\d+)/);
+          return matches ? matches[1].padStart(2, '0') : '';
+        })
+        .filter(n => n !== '')
+        .sort((a, b) => parseInt(a) - parseInt(b));
+      
+      const uniqueNums = [...new Set(nums)];
+      return uniqueNums.join(' - ');
+    };
+
+    const STYLE_DESCRIPTIONS = {
+      1: {
+        title: 'Intelligent Style',
+        sub: '지적인',
+        lines: [
+          '정교한 핏과 단정한 라인이',
+          '매력적이며 명확한 분위기를 풍겨요',
+          '깔끔하게 정돈된 스티치 하나에도',
+          '깊은 신뢰감이 배어있어요',
+          '아마 세상을 바라보는',
+          '자신만의 명확한 기준과',
+          '지적 호기심이 가득한 분일 거예요'
+        ],
+        malls: [
+          'RECTO',
+          'LOW CLASSIC',
+          'KINDERSALMON'
+        ]
+      },
+      2: {
+        title: 'Romantic Style',
+        sub: '로맨틱',
+        lines: [
+          '부드러운 레이스와 정교한 디테일로',
+          '사랑스러운 분위기가 가득 담겼어요',
+          '따뜻한 온기와 섬세한 감성으로',
+          '마음을 설레게 만들어요',
+          '아마 언제나 일상 속에서',
+          '작고 반짝이는 로망을 찾아 나서는',
+          '따스한 마음을 가진 분일 거예요'
+        ],
+        malls: [
+          'LETTER FROM MOON',
+          'SINOON (시눈)',
+          'Margarin Fingers'
+        ]
+      },
+      3: {
+        title: 'Elegant Style',
+        sub: '우아한',
+        lines: [
+          '부드럽게 흘러내리는 실루엣과',
+          '고급스러움이 차분한 깊이감을 줘요',
+          '과하게 드러내지 않아도',
+          '자연스럽게 품격과 여유가 묻어나요',
+          '아마 조용하지만 또렷하게',
+          '자신만의 품위를 가지고',
+          '우아한 분위기를 풍기실 거예요'
+        ],
+        malls: [
+          'MINE',
+          'MOJO',
+          'avouavou'
+        ]
+      },
+      4: {
+        title: 'Active Style',
+        sub: '액티브한',
+        lines: [
+          '에너지 넘치고 활기찬 움직임을 위한',
+          '편안함이 직관적으로 보여요',
+          '경쾌한 색감과 생동감으로',
+          '한층 더 자신감을 실어주는 느낌이에요',
+          '아마 거침없이 도전하고',
+          '자유롭게 발걸음을 옮기는',
+          '매일을 실천하고 계실 것 같아요'
+        ],
+        malls: [
+          'lululemon',
+          'Nike',
+          'adidas'
+        ]
+      },
+      5: {
+        title: 'Rustic Style',
+        sub: '소박한',
+        lines: [
+          '자연 그대로의 질감과',
+          '편안한 톤이 주는',
+          '정겨운 매력이 돋보여요',
+          '가공되지 않은 듯 나뭇결이나',
+          '천연 소재 특유의 포근함이 느껴져요',
+          '아마 자극적인 것보다는',
+          '편안하게 오래 머무는',
+          '따스함의 가치를 아는 분이실 거예요'
+        ],
+        malls: [
+          'TOAST',
+          '무인양품 MUJI',
+          'EPIC RARE'
+        ]
+      },
+      6: {
+        title: 'Modern Style',
+        sub: '모던한',
+        lines: [
+          '차가운 도시 감성과 감각적인 구조가',
+          '세련된 인상을 남겨요',
+          '동시대적인 흐름을 빠르게 포착해',
+          '남다른 감각을 표현해 내요',
+          '날카롭고 민첩하게 트렌드를 이끄는',
+          '감각적인 스타일을',
+          '가지고 있으실 거예요'
+        ],
+        malls: [
+          'MATIN KIM',
+          '보헤미안서울',
+          'OPEN YY'
+        ]
+      },
+      7: {
+        title: 'Minimal Style',
+        sub: '미니멀한',
+        lines: [
+          '불필요한 장식이 덜어지고',
+          '본질적인 담백함이 온전히 남았어요',
+          '군더더기 없는 차분함 속에서 느껴지는',
+          '은은한 힘이 매력적이에요',
+          '복잡한 세상 속에서',
+          '자신만의 명확하고 간결한 태도를',
+          '유지할 수 있는 분이실 거예요'
+        ],
+        malls: [
+          'UNIQLO',
+          'COS',
+          '무신사 스탠다드'
+        ]
+      },
+      8: {
+        title: 'Exotic Style',
+        sub: '이국적인',
+        lines: [
+          '다양한 문화와 색채가 넘쳐나는',
+          '낯선 여행지에 온 것 같은 느낌이에요',
+          '과감한 패턴과 독특한 소재로',
+          '자신만의 개성을 표현할 수 있어요',
+          '아마 마음속 깊은 곳에',
+          '남들과는 다른 자유로움과',
+          '새로운 세상에 대한 탐험심을',
+          '간직하고 계실지도 몰라요'
+        ],
+        malls: [
+          'FARM Rio',
+          'Thursday Island',
+          'FROMSMOOD'
+        ]
+      }
+    };
+
+    const styleDesc = STYLE_DESCRIPTIONS[moodIndex] || STYLE_DESCRIPTIONS[1];
+
+    return (
+      <div className="min-h-screen w-full flex flex-col relative overflow-y-auto transition-colors duration-500" style={{ backgroundColor: styleColor }}>
+        
+        {/* Navigation back button (Outside capture) */}
+        <button
+          type="button"
+          onClick={() => setCurrentPage('page8')}
+          className="absolute z-30 p-2 rounded-full hover:bg-white/20 transition-colors border-none bg-transparent cursor-pointer"
+          style={{ position: 'absolute', left: '20px', top: '68px' }}
+        >
+          <ChevronLeft size={36} style={{ color: '#575759' }} />
+        </button>
+
+        {/* Captured Poster Wrapper */}
+        <div
+          ref={downloadCardRef}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '1620px',
+            height: `${1309.0085 + aiCardHeight + 50}px`,
+            backgroundColor: styleColor,
+            overflow: 'hidden'
+          }}
+        >
+          {/* Selection Status Text */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '331.396px',
+              left: '137.0835px',
+              fontSize: '20pt',
+              color: '#575759',
+              fontFamily: 'Presentation',
+              lineHeight: 1.5,
+              textAlign: 'left',
+              zIndex: 10
+            }}
+          >
+            <div>Step 01. Hair. {getSelectedNumbersString('hair') || ''}</div>
+            <div>Step 02. Clothes. {getSelectedNumbersString('clothing') || ''}</div>
+            <div>Step 03. Item. {getSelectedNumbersString('accessory') || ''}</div>
+          </div>
+
+          {/* Chapter 03 Text */}
+          <div
+            className="absolute z-10 select-none text-left"
+            style={{
+              position: 'absolute',
+              top: '73.7709px',
+              left: '71.3616px',
+              fontSize: '20pt',
+              color: '#575759',
+              fontFamily: 'Presentation',
+              lineHeight: 1.25,
+              margin: 0
+            }}
+          >
+            Chapter 03. 스타일 해석
+          </div>
+
+          {/* Top Right Logo */}
+          <div
+            className="absolute z-10 pointer-events-none"
+            style={{
+              position: 'absolute',
+              top: '73.7709px',
+              right: '71.3616px',
+              width: '115.7675px',
+              height: '23.8725px'
+            }}
+          >
+            <svg viewBox="0 0 115.77 23.84" style={{ width: '100%', height: '100%' }}>
+              <path fill="#575759" d="M70.45,1.71l-.77-.27.36-.73-.27-.27-.73.36-.27-.77h-.38l-.27.77-.73-.36-.27.27.36.73-.77.27v.38l.77.27-.36.73c.14.14.13.13.27.27l.73-.36.27.77h.38l.27-.77.73.36c.14-.14.13-.13.27-.27l-.36-.73.77-.27v-.38Z"/>
+              <path fill="#575759" d="M28.32,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C30.5,4.34,28.03.38,22.69,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88.17,4.51,3.21,10.66,11.24,10.66,6.93,0,10.06-5.29,10.28-6.17M14.04,9.52c.17-2.03,2.61-6.24,7.26-6.39,6.33,0,7.26,5.11,7.26,6.39h-14.51Z"/>
+              <path fill="#575759" d="M111.79,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C113.98,4.34,111.5.38,106.16,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88s3.21,10.66,11.24,10.66c6.93,0,10.06-5.29,10.28-6.17M97.51,9.52c.17-2.03,2.61-6.24,7.26-6.39,7.26,0,7.26,5.11,7.26,6.39h-14.51Z"/>
+              <rect fill="#575759" x="66.69" y="6.47" width="3.76" height="17.37"/>
+              <path fill="#575759" d="M83,0C80.01,0,78.33,1.55,77.33,2.53V0h-3.76v23.84h3.76v-13c0-3.82,1.62-7.71,6.14-7.71,3.46,0,4.76,3.4,4.76,7.85v12.86h3.76v-12.86C91.98,1.27,86.37,0,83,0Z"/>
+              <path fill="#575759" d="M56.41,0c-2.88,0-5.17,1.9-6.02,4.02C48.63.61,46.34,0,44.04,0,42.08,0,40.21,1.3,39.2,2.86V0h-3.76v23.84h3.76v-15.15c0-2.93,2.18-5.55,4.87-5.55,2.24,0,3.57,2.03,3.57,5.55v15.15h3.76v-15.15c0-2.42,2.06-5.55,4.59-5.55s3.8,2.16,3.8,5.55v15.15h3.76v-12.86C63.55,9.19,63.97,0,56.41,0Z"/>
+              <path fill="#575759" d="M10.33.59c-.69-.2-1.4-.31-2.12-.31-1.84,0-3.57,1.2-4.44,2.78V0H0v23.84h3.76v-13.64c0-4.21,2.51-5.77,4.7-6.23.6-.13,1.23-.08,1.86.09V.59Z"/>
+            </svg>
+          </div>
+
+          {/* Absolute Title */}
+          <h1
+            className="absolute z-10 select-none text-center"
+            style={{
+              position: 'absolute',
+              top: '114.1166px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              fontSize: '50pt',
+              fontWeight: 800,
+              color: '#575759',
+              fontFamily: 'Presentation',
+              lineHeight: 1.25,
+              margin: 0,
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {String(userName)}님의 도디
+          </h1>
+
+          {/* Absolute Character Doll */}
+          <div
+            ref={characterOnlyRef}
+            className="absolute pointer-events-none"
+            style={{
+              position: 'absolute',
+              left: '252.7832px',
+              top: '513.3566px',
+              width: '564.8277px',
+              height: '564.8277px',
+              zIndex: 10
+            }}
+          >
+            {wornImages.sort((a, b) => a.zIndex - b.zIndex).map((img) => (
+              <div
+                key={img.id}
+                style={{
+                  position: 'absolute',
+                  left: `${(img.x - char.x) * scale - 18}px`,
+                  top: `${(img.y - char.y) * scale}px`,
+                  width: `${img.width * scale}px`,
+                  height: `${img.height * scale}px`,
+                  zIndex: img.zIndex
+                }}
+              >
+                <img src={img.src} alt={img.type} className="w-full h-full block" />
+              </div>
+            ))}
+          </div>
+
+          {/* Right Sidebar Wrapper for Style description & Recommendation Cards */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '273.6157px',
+              right: '70.3212px',
+              width: '439.83px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '70.3212px',
+              zIndex: 10
+            }}
+          >
+            {/* Card 1: Style Interpretation */}
+            <div
+              style={{
+                width: '100%',
+                backgroundColor: '#a4a4a8',
+                borderRadius: '40px',
+                padding: '50px 38.33px',
+                boxSizing: 'border-box',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                alignItems: 'flex-start'
+              }}
+            >
+              <h2
+                style={{
+                  fontFamily: 'Presentation',
+                  fontSize: '50px',
+                  fontWeight: 700,
+                  color: '#f2f0f0',
+                  margin: '0 0 42.66px 0',
+                  lineHeight: 1.2,
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {styleDesc.title}
+              </h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+                {styleDesc.lines.map((line, idx) => (
+                  <p
+                    key={idx}
+                    style={{
+                      fontFamily: 'Presentation',
+                      fontSize: '29px',
+                      fontWeight: 500,
+                      color: '#f2f0f0',
+                      margin: 0,
+                      lineHeight: '42px',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {line}
+                  </p>
+                ))}
+              </div>
+            </div>
+
+            {/* Card 2: Recommended Mall */}
+            <div
+              style={{
+                width: '100%',
+                backgroundColor: '#a4a4a8',
+                borderRadius: '40px',
+                padding: '50px 38.33px',
+                boxSizing: 'border-box',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                alignItems: 'flex-start'
+              }}
+            >
+              <h2
+                style={{
+                  fontFamily: 'Presentation',
+                  fontSize: '50px',
+                  fontWeight: 700,
+                  color: '#f2f0f0',
+                  margin: '0 0 42.66px 0',
+                  lineHeight: 1.2,
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                추천 쇼핑몰
+              </h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+                {(styleDesc.malls || []).map((mall, idx) => (
+                  <p
+                    key={idx}
+                    style={{
+                      fontFamily: 'Presentation',
+                      fontSize: '29px',
+                      fontWeight: 500,
+                      color: '#f2f0f0',
+                      margin: 0,
+                      lineHeight: '42px',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {mall}
+                  </p>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Card 3: AI Card, Custom SVG Symbol */}
+          <div
+            ref={aiCardRef}
+            style={{
+              position: 'absolute',
+              top: '1309.0085px',
+              left: '70.3212px',
+              right: '70.3212px',
+              zIndex: 10
+            }}
+          >
+            <div style={{ position: 'relative', width: '100%', display: 'flex', alignItems: 'center' }}>
+              {/* Custom AI Interpretation Card Box (Dynamic Height) */}
+              <div
+                style={{
+                  width: '962.798px',
+                  backgroundColor: '#a4a4a8',
+                  borderRadius: '40px',
+                  padding: '50px 38.33px',
+                  boxSizing: 'border-box',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'flex-start',
+                  alignItems: 'flex-start'
+                }}
+              >
+                <h2
+                  style={{
+                    fontFamily: 'Presentation',
+                    fontSize: '50px',
+                    fontWeight: 700,
+                    color: '#f2f0f0',
+                    margin: '0 0 42.66px 0',
+                    lineHeight: 1.2,
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {String(userName)}님의 스타일 해석
+                </h2>
+                <p
+                  style={{
+                    fontFamily: 'Presentation',
+                    fontSize: '29px',
+                    fontWeight: 500,
+                    color: '#f2f0f0',
+                    margin: 0,
+                    lineHeight: '42px',
+                    whiteSpace: 'pre-line',
+                    wordBreak: 'keep-all',
+                    textAlign: 'left'
+                  }}
+                >
+                  {isAiLoading ? (
+                    <span className="flex items-center gap-3">
+                      <Loader2 className="animate-spin text-white/80" size={24} />
+                      <span>구무가 스타일을 해석하고 있어요...</span>
+                    </span>
+                  ) : (
+                    aiDescription || "스타일 분석 결과를 불러오고 있습니다."
+                  )}
+                </p>
+              </div>
+
+              {/* Decorative SVG Symbol */}
+              <div
+                style={{
+                  position: 'absolute',
+                  right: '135.6506px',
+                  width: '174.9389px',
+                  height: '174.9389px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <svg viewBox="0 0 87.78 87.79" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                  <defs>
+                    <linearGradient id="symbol-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor={symbolColors[0]} />
+                      <stop offset="50%" stopColor={symbolColors[1]} />
+                      <stop offset="100%" stopColor={symbolColors[2]} />
+                    </linearGradient>
+                  </defs>
+                  <path fill="url(#symbol-gradient)" d="M87.78,39.42l-18.03-6.24,8.34-17.17c-3.18-3.18-3.15-3.15-6.32-6.32l-17.17,8.34L48.36,0c-4.49,0-4.45,0-8.94,0l-6.24,18.04-17.16-8.34c-3.18,3.18-3.15,3.15-6.32,6.32l8.34,17.17L0,39.42c0,4.49,0,4.45,0,8.94l18.03,6.24-8.34,17.17c3.18,3.18,3.15,3.15,6.32,6.32l17.16-8.34,6.24,18.04c4.49,0,4.45,0,8.94,0l6.24-18.04,17.17,8.34c3.18-3.18,3.15-3.15,6.32-6.32l-8.34-17.17,18.03-6.24c0-4.49,0-4.45,0-8.94Z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Area (Outside captured card wrapper) */}
+        <div
+          style={{
+            position: 'absolute',
+            top: `${1309.0085 + aiCardHeight + 92.0197}px`, // Placed exactly below the captured poster card wrapper!
+            left: '70.3212px',
+            right: '70.3212px',
+            zIndex: 20
+          }}
+        >
+          {/* Download Buttons Row */}
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              height: '193.47px'
+            }}
+          >
+            {/* 도디 다운로드 (PNG) - Left alignment */}
+            <button
+              type="button"
+              onClick={() => downloadImage(characterOnlyRef.current, `moodie_only_${styleDesc.title}.png`, null)}
+              className="absolute left-0 top-0 transition-all active:scale-95 border-none bg-transparent p-0 cursor-pointer"
+              style={{ width: '704.52px', height: '193.47px' }}
+            >
+              <svg viewBox="0 0 704.52 193.47" style={{ width: '100%', height: '100%' }}>
+                <rect fill="#c1c1c6" x="0" width="704.52" height="193.47" rx="40" ry="40"/>
+                <text textAnchor="middle" x="352.26" y="112.76" fill="#5e5e5e" fontFamily="Presentation" fontSize="50px" fontWeight="700">도디 다운로드(PNG)</text>
+              </svg>
+            </button>
+
+            {/* 설명 카드 다운로드 - Right alignment */}
+            <button
+              type="button"
+              onClick={() => downloadImage(downloadCardRef.current, `moodie_card_${styleDesc.title}.png`, null)}
+              className="absolute right-0 top-0 transition-all active:scale-95 cursor-pointer border-none bg-transparent p-0"
+              style={{ width: '704.52px', height: '193.47px' }}
+            >
+              <svg viewBox="0 0 704.52 193.47" style={{ width: '100%', height: '100%' }}>
+                <rect fill="#c1c1c6" x="0" width="704.52" height="193.47" rx="40" ry="40"/>
+                <text textAnchor="middle" x="352.26" y="112.76" fill="#5e5e5e" fontFamily="Presentation" fontSize="50px" fontWeight="700">설명 카드 다운로드</text>
+              </svg>
+            </button>
+          </div>
+
+          {/* Reset Button (Below the download buttons) */}
+          <div
+            style={{
+              marginTop: '80px',
+              display: 'flex',
+              justifyContent: 'center',
+              width: '100%',
+              paddingBottom: '100px'
+            }}
+          >
+            <button
+              type="button"
+              onClick={handleGlobalReset}
+              className="py-2 flex items-center justify-center gap-2 font-medium text-[#575759] transition-all active:opacity-60 border-none bg-transparent cursor-pointer"
+            >
+              <RotateCcw size={18} />
+              <span className="text-[16px] border-b border-[#575759] pb-0.5">처음으로 돌아가기</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Scrollable Spacer to stretch container height */}
+        <div style={{ height: `${1804.4982 + aiCardHeight + 100}px`, width: '100%', pointerEvents: 'none' }} />
+      </div>
+    );
+  }
+};
+
+const rootLayout = createRoot(document.getElementById('root'));
+rootLayout.render(<App />);
+
+    
+</script>
+</body>
+</html>
