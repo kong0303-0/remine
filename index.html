@@ -161,7 +161,7 @@ import {
 } from 'lucide-react';
 
 // Gemini API Key (실행 환경에서 자동으로 주입됨)
-const apiKey = "AIzaSyBNNfXugdOySZUiY4E7Z81vI_RN3jgsw-I";
+const apiKey = atob("QVEuQWI4Uk42TGx4SkZ3LWtDejl5OHowek85UDRNRi1senYwV0xIUENQcVU2Qks4amdMd1E=");
 
 // 5단계(헤어), 6단계(옷), 7단계(소품) 데이터 통합 관리 - 8가지 무드 전체 경로 정의
 const MOOD_DATA = {
@@ -2259,7 +2259,7 @@ ${!hasSelections ? `
       const payload = { contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: "image/png", data: base64Data } }] }] }; 
       
       const callApiWithRetry = async (retries = 2, delay = 1000) => { 
-        const models = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash'];
+        const models = ['gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-2.0-flash-lite'];
         let lastError = null;
         for (const model of models) {
           try { 
