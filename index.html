@@ -170,7 +170,7 @@ const MOOD_DATA = {
   '5.2': { id: '5.2', step: '05', name: '로맨틱', prev: null, next: '6.2' },
   '5.3': { id: '5.3', step: '05', name: '우아한', prev: null, next: '6.3' },
   '5.4': { id: '5.4', step: '05', name: '액티브한', prev: null, next: '6.4' },
-  '5.5': { id: '5.5', step: '05', name: '소박한', prev: null, next: '6.5' },
+  '5.5': { id: '5.5', step: '05', name: '전원풍의', prev: null, next: '6.5' },
   '5.6': { id: '5.6', step: '05', name: '모던한', prev: null, next: '6.6' },
   '5.7': { id: '5.7', step: '05', name: '미니멀한', prev: null, next: '6.7' },
   '5.8': { id: '5.8', step: '05', name: '이국적인', prev: null, next: '6.8' },
@@ -180,7 +180,7 @@ const MOOD_DATA = {
   '6.2': { id: '6.2', step: '06', name: '로맨틱', prev: '5.2', next: '7.2' },
   '6.3': { id: '6.3', step: '06', name: '우아한', prev: '5.3', next: '7.3' },
   '6.4': { id: '6.4', step: '06', name: '액티브한', prev: '5.4', next: '7.4' },
-  '6.5': { id: '6.5', step: '06', name: '소박한', prev: '5.5', next: '7.5' },
+  '6.5': { id: '6.5', step: '06', name: '전원풍의', prev: '5.5', next: '7.5' },
   '6.6': { id: '6.6', step: '06', name: '모던한', prev: '5.6', next: '7.6' },
   '6.7': { id: '6.7', step: '06', name: '미니멀한', prev: '5.7', next: '7.7' },
   '6.8': { id: '6.8', step: '06', name: '이국적인', prev: '5.8', next: '7.8' },
@@ -190,7 +190,7 @@ const MOOD_DATA = {
   '7.2': { id: '7.2', step: '07', name: '로맨틱', prev: '6.2', next: 'page8' },
   '7.3': { id: '7.3', step: '07', name: '우아한', prev: '6.3', next: 'page8' },
   '7.4': { id: '7.4', step: '07', name: '액티브한', prev: '6.4', next: 'page8' },
-  '7.5': { id: '7.5', step: '07', name: '소박한', prev: '6.5', next: 'page8' },
+  '7.5': { id: '7.5', step: '07', name: '전원풍의', prev: '6.5', next: 'page8' },
   '7.6': { id: '7.6', step: '07', name: '모던한', prev: '6.6', next: 'page8' },
   '7.7': { id: '7.7', step: '07', name: '미니멀한', prev: '6.7', next: 'page8' },
   '7.8': { id: '7.8', step: '07', name: '이국적인', prev: '6.8', next: 'page8' },
@@ -202,7 +202,7 @@ const STYLES_DESC = [
   { id: '9.2', name: 'Romantic', sub: '로맨틱', color: '#fce7f3', accent: '#ec4899', desc: { mood: '사랑스럽고 따뜻한 감성이 묻어나는 스타일입니다.', mall: '스타일난다, 아뜨랑스, 프롬비기닝' } },
   { id: '9.3', name: 'Elegant', sub: '우아한', color: '#f5f5f4', accent: '#78350f', desc: { mood: '우아하고 품격 있는 무드를 지향합니다.', mall: '타임(TIME), 마인(MINE), 띠어리(Theory)' } },
   { id: '9.4', name: 'Active', sub: '액티브한', color: '#ecfdf5', accent: '#10b981', desc: { mood: '에너지가 넘치고 생동감 있는 스타일입니다.', mall: '나이키, 아디다스, 룰루레몬, 안다르' } },
-  { id: '9.5', name: 'Rustic', sub: '소박한', color: '#fef3c7', accent: '#d97706', desc: { mood: '자연스럽고 편안한 전원의 정취입니다.', mall: '슬로우앤, 젬마월드, 리얼코코' } },
+  { id: '9.5', name: 'Country', sub: '전원풍의', color: '#fef3c7', accent: '#d97706', desc: { mood: '자연스럽고 편안한 전원의 정취입니다.', mall: '슬로우앤, 젬마월드, 리얼코코' } },
   { id: '9.6', name: 'Modern', sub: '모던한', color: '#18181b', accent: '#ffffff', desc: { mood: '동시대적인 감각의 시크한 스타일입니다.', mall: '무신사 스탠다드, 자라(ZARA), 앤더슨벨' } },
   { id: '9.7', name: 'Minimal', sub: '미니멀한', color: '#ffffff', accent: '#000000', desc: { mood: '비움의 미학을 극대화한 스타일입니다.', mall: '로우클래식, 르메르, 질샌더' } },
   { id: '9.8', name: 'Exotic', sub: '이국적인', color: '#fff7ed', accent: '#f97316', desc: { mood: '신비롭고 이국적인 분위기를 자아냅니다.', mall: '앤솔로지, 프리피플, 자라 홈 패션' } },
@@ -851,7 +851,7 @@ const MoodStep = ({ moods, scrollY, textData, onTextUpdate, onMoodClick, onMoodS
             {[
               { id: 2, name: '로맨틱', d: 'M719.74,673.87l395.73-163.92,124.22-255.68c-50.42-50.42-49.94-49.94-100.36-100.36l-255.68,124.22-163.92,395.73Z', clip: 'clippath', img_transform: 'translate(1100.46 14.89) rotate(47.09) scale(.22)', img_href: 'mood_slice_1.jpeg', num: '02', num_trans: 'translate(966.89 411.75)', lbl: '로맨틱한', lbl_trans: 'translate(951.56 460.02)' },
               { id: 4, name: '액티브한', d: 'M664.37,696.8l-395.72-163.91L0,625.84c0,71.31,0,70.64,0,141.92l268.63,92.96,395.73-163.92Z', clip: 'clippath-1', img_transform: 'translate(674.37 508.5) rotate(90) scale(.22)', img_href: 'mood_slice_2.jpeg', num: '07', num_trans: 'translate(251.1 714.91)', lbl: '액티브한', lbl_trans: 'translate(235.7 762.24)' },
-              { id: 5, name: '소박한', d: 'M673.87,673.87l-163.91-395.72-255.69-124.24c-50.42,50.42-49.93,49.93-100.36,100.36l124.23,255.68,395.73,163.92Z', clip: 'clippath-2', img_transform: 'translate(860.72 552.55) rotate(135) scale(.22)', img_href: 'mood_slice_3.jpeg', num: '08', num_trans: 'translate(366.44 411.75)', lbl: '소박한', lbl_trans: 'translate(361.1 460.02)' },
+              { id: 5, name: '전원풍의', d: 'M673.87,673.87l-163.91-395.72-255.69-124.24c-50.42,50.42-49.93,49.93-100.36,100.36l124.23,255.68,395.73,163.92Z', clip: 'clippath-2', img_transform: 'translate(860.72 552.55) rotate(135) scale(.22)', img_href: 'mood_slice_3.jpeg', num: '08', num_trans: 'translate(366.44 411.75)', lbl: '전원풍의', lbl_trans: 'translate(351.1 460.02)' },
               { id: 3, name: '우아한', d: 'M1124.97,532.89l-395.73,163.92,395.73,163.91,268.64-92.95c0-71.31,0-70.62,0-141.92l-268.63-92.96Z', clip: 'clippath-3', img_transform: 'translate(1393.61 493.1) rotate(90) scale(.22)', img_href: 'mood_slice_4.jpeg', num: '03', num_trans: 'translate(1098.68 714.91)', lbl: '우아한', lbl_trans: 'translate(1093.53 762.24)' },
               { id: 8, name: '이국적인', d: 'M696.8,664.37l163.92-395.73L767.76,0c-71.29,0-70.62,0-141.92,0l-92.95,268.64,163.92,395.73Z', clip: 'clippath-4', img_transform: 'translate(485.57 -61.29) scale(.22)', img_href: 'mood_slice_5.jpeg', num: '01', num_trans: 'translate(671.6 309.21)', lbl: '이국적인', lbl_trans: 'translate(652 352.92)' },
               { id: 1, name: '지적인', d: 'M719.74,719.74l163.92,395.73,255.68,124.23c50.43-50.43,49.94-49.94,100.36-100.36l-124.24-255.69-395.72-163.91Z', clip: 'clippath-5', img_transform: 'translate(545.42 862.52) rotate(-45) scale(.22)', img_href: 'mood_slice_6.jpeg', num: '04', num_trans: 'translate(966.64 1007.54)', lbl: '지적인', lbl_trans: 'translate(962.82 1056.55)' },
@@ -1067,7 +1067,7 @@ const MoodDetailView = ({ mood, layoutHeight, onBack }) => {
       6: '디자인!/무보5.jpg', // 05 모던한
       7: '디자인!/무보6.jpg', // 06 미니멀한
       4: '디자인!/무보7.jpg', // 07 활동적인
-      5: '디자인!/무보8.jpg'  // 08 소박한
+      5: '디자인!/무보8.jpg'  // 08 전원풍의
     };
     return map[moodId] || '';
   };
@@ -1238,7 +1238,7 @@ const App = () => {
     mood_header_desc: { content: "각 무드를 클릭하시면 설명을 보실 수 있습니다. 마음에 드는 무드를 골라 하트를 눌러보세요.", fontSize: 22, lineHeight: 1.5, textAlign: 'center', marginTop: 0, marginLeft: 0 }
   });
   const [introData, setIntroData] = useState({ video: "https://assets.mixkit.co/videos/preview/mixkit-curious-white-cat-looking-at-the-camera-43431-large.mp4", photos: [{ url: "https://images.unsplash.com/photo-1559445366-4e5659837965?auto=format&fit=crop&q=80&w=800", width: 48, height: 450 }, { url: "https://images.unsplash.com/photo-1515488764276-beab7607c1e6?auto=format&fit=crop&q=80&w=800", width: 48, height: 450 }] });
-  const [moods, setMoods] = useState([{ id: 1, name: '지적인', liked: false, image: null }, { id: 2, name: '로맨틱', liked: false, image: null }, { id: 3, name: '우아한', liked: false, image: null }, { id: 4, name: '액티브한', liked: false, image: null }, { id: 5, name: '소박한', liked: false, image: null }, { id: 6, name: '모던한', liked: false, image: null }, { id: 7, name: '미니멀한', liked: false, image: null }, { id: 8, name: '이국적인', liked: false, image: null }]);
+  const [moods, setMoods] = useState([{ id: 1, name: '지적인', liked: false, image: null }, { id: 2, name: '로맨틱', liked: false, image: null }, { id: 3, name: '우아한', liked: false, image: null }, { id: 4, name: '액티브한', liked: false, image: null }, { id: 5, name: '전원풍의', liked: false, image: null }, { id: 6, name: '모던한', liked: false, image: null }, { id: 7, name: '미니멀한', liked: false, image: null }, { id: 8, name: '이국적인', liked: false, image: null }]);
   const [currentMoodId, setCurrentMoodId] = useState('5.1');
   const [bgColor, setBgColor] = useState('#ffffff');
   const [zoom, setZoom] = useState(1); 
@@ -1257,7 +1257,7 @@ const App = () => {
     2: { ko: '로맨틱한', en: 'Romantic' },
     3: { ko: '우아한', en: 'Elegant' },
     4: { ko: '액티브한', en: 'Active' },
-    5: { ko: '소박한', en: 'Rustic' },
+    5: { ko: '전원풍의', en: 'Country' },
     6: { ko: '모던한', en: 'Modern' },
     7: { ko: '미니멀한', en: 'Minimal' },
     8: { ko: '이국적인', en: 'Exotic' }
@@ -3116,8 +3116,8 @@ ${!hasSelections ? `
         ]
       },
       5: {
-        title: 'Rustic Style',
-        sub: '소박한',
+        title: 'Country Style',
+        sub: '전원풍의',
         lines: [
           '자연 그대로의 질감과',
           '편안한 톤이 주는',
