@@ -11,6 +11,16 @@
     <meta id="theme-color-meta" name="theme-color" content="#ededf2">
     <meta name="apple-mobile-web-app-title" content="GUMU">
     
+    <!-- Preload WebP Moodboards for Instant Loading -->
+    <link rel="preload" as="image" href="디자인!/0909-01.webp">
+    <link rel="preload" as="image" href="디자인!/0909-02.webp">
+    <link rel="preload" as="image" href="디자인!/0909-03.webp">
+    <link rel="preload" as="image" href="디자인!/0909-04.webp">
+    <link rel="preload" as="image" href="디자인!/0909-05.webp">
+    <link rel="preload" as="image" href="디자인!/0909-06.webp">
+    <link rel="preload" as="image" href="디자인!/0909-07.webp">
+    <link rel="preload" as="image" href="디자인!/0909-08.webp">
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -169,7 +179,7 @@ const MOOD_DATA = {
   '5.1': { id: '5.1', step: '05', name: '지적인', prev: null, next: '6.1' },
   '5.2': { id: '5.2', step: '05', name: '로맨틱', prev: null, next: '6.2' },
   '5.3': { id: '5.3', step: '05', name: '우아한', prev: null, next: '6.3' },
-  '5.4': { id: '5.4', step: '05', name: '액티브한', prev: null, next: '6.4' },
+  '5.4': { id: '5.4', step: '05', name: '활동적인', prev: null, next: '6.4' },
   '5.5': { id: '5.5', step: '05', name: '전원풍의', prev: null, next: '6.5' },
   '5.6': { id: '5.6', step: '05', name: '모던한', prev: null, next: '6.6' },
   '5.7': { id: '5.7', step: '05', name: '미니멀한', prev: null, next: '6.7' },
@@ -179,7 +189,7 @@ const MOOD_DATA = {
   '6.1': { id: '6.1', step: '06', name: '지적인', prev: '5.1', next: '7.1' },
   '6.2': { id: '6.2', step: '06', name: '로맨틱', prev: '5.2', next: '7.2' },
   '6.3': { id: '6.3', step: '06', name: '우아한', prev: '5.3', next: '7.3' },
-  '6.4': { id: '6.4', step: '06', name: '액티브한', prev: '5.4', next: '7.4' },
+  '6.4': { id: '6.4', step: '06', name: '활동적인', prev: '5.4', next: '7.4' },
   '6.5': { id: '6.5', step: '06', name: '전원풍의', prev: '5.5', next: '7.5' },
   '6.6': { id: '6.6', step: '06', name: '모던한', prev: '5.6', next: '7.6' },
   '6.7': { id: '6.7', step: '06', name: '미니멀한', prev: '5.7', next: '7.7' },
@@ -189,7 +199,7 @@ const MOOD_DATA = {
   '7.1': { id: '7.1', step: '07', name: '지적인', prev: '6.1', next: 'page8' },
   '7.2': { id: '7.2', step: '07', name: '로맨틱', prev: '6.2', next: 'page8' },
   '7.3': { id: '7.3', step: '07', name: '우아한', prev: '6.3', next: 'page8' },
-  '7.4': { id: '7.4', step: '07', name: '액티브한', prev: '6.4', next: 'page8' },
+  '7.4': { id: '7.4', step: '07', name: '활동적인', prev: '6.4', next: 'page8' },
   '7.5': { id: '7.5', step: '07', name: '전원풍의', prev: '6.5', next: 'page8' },
   '7.6': { id: '7.6', step: '07', name: '모던한', prev: '6.6', next: 'page8' },
   '7.7': { id: '7.7', step: '07', name: '미니멀한', prev: '6.7', next: 'page8' },
@@ -201,7 +211,7 @@ const STYLES_DESC = [
   { id: '9.1', name: 'Intelligent', sub: '지적인', color: '#334155', accent: '#94a3b8', desc: { mood: '지적이고 단정한 매력을 풍기는 스타일입니다.', mall: '29CM, W컨셉, COS, 아르켓(ARKET)' } },
   { id: '9.2', name: 'Romantic', sub: '로맨틱', color: '#fce7f3', accent: '#ec4899', desc: { mood: '사랑스럽고 따뜻한 감성이 묻어나는 스타일입니다.', mall: '스타일난다, 아뜨랑스, 프롬비기닝' } },
   { id: '9.3', name: 'Elegant', sub: '우아한', color: '#f5f5f4', accent: '#78350f', desc: { mood: '우아하고 품격 있는 무드를 지향합니다.', mall: '타임(TIME), 마인(MINE), 띠어리(Theory)' } },
-  { id: '9.4', name: 'Active', sub: '액티브한', color: '#ecfdf5', accent: '#10b981', desc: { mood: '에너지가 넘치고 생동감 있는 스타일입니다.', mall: '나이키, 아디다스, 룰루레몬, 안다르' } },
+  { id: '9.4', name: 'Active', sub: '활동적인', color: '#ecfdf5', accent: '#10b981', desc: { mood: '에너지가 넘치고 생동감 있는 스타일입니다.', mall: '나이키, 아디다스, 룰루레몬, 안다르' } },
   { id: '9.5', name: 'Country', sub: '전원풍의', color: '#fef3c7', accent: '#d97706', desc: { mood: '자연스럽고 편안한 전원의 정취입니다.', mall: '슬로우앤, 젬마월드, 리얼코코' } },
   { id: '9.6', name: 'Modern', sub: '모던한', color: '#18181b', accent: '#ffffff', desc: { mood: '동시대적인 감각의 시크한 스타일입니다.', mall: '무신사 스탠다드, 자라(ZARA), 앤더슨벨' } },
   { id: '9.7', name: 'Minimal', sub: '미니멀한', color: '#ffffff', accent: '#000000', desc: { mood: '비움의 미학을 극대화한 스타일입니다.', mall: '로우클래식, 르메르, 질샌더' } },
@@ -335,11 +345,9 @@ const WelcomeStep = ({ userName, setUserName, onNext, isEditMode, setIsEditMode,
       )}
 
       {/* SVG Logo (Absolutely Positioned) */}
-      <svg 
-        id="Layer_1" 
-        data-name="Layer 1" 
-        xmlns="http://www.w3.org/2000/svg" 
-        viewBox="0 0 115.77 23.84" 
+      <img 
+        src="디자인!/로고_0909.svg" 
+        alt="로고" 
         style={{
           position: 'absolute',
           top: '756.4334px',
@@ -349,21 +357,8 @@ const WelcomeStep = ({ userName, setUserName, onNext, isEditMode, setIsEditMode,
           height: 'auto',
           zIndex: 10
         }}
-        className="select-none pointer-events-none"
-      >
-        <defs>
-          <style>
-            {`.cls-1 { fill: #575759; stroke-width: 0px; }`}
-          </style>
-        </defs>
-        <path className="cls-1" d="M70.45,1.71l-.77-.27.36-.73-.27-.27-.73.36-.27-.77h-.38l-.27.77-.73-.36-.27.27.36.73-.77.27v.38l.77.27-.36.73c.14.14.13.13.27.27l.73-.36.27.77h.38l.27-.77.73.36c.14-.14.13-.13.27-.27l-.36-.73.77-.27v-.38Z"/>
-        <path className="cls-1" d="M28.32,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C30.5,4.34,28.03.38,22.69,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88.17,4.51,3.21,10.66,11.24,10.66,6.93,0,10.06-5.29,10.28-6.17M14.04,9.52c.17-2.03,2.61-6.24,7.26-6.39,6.33,0,7.26,5.11,7.26,6.39h-14.51Z"/>
-        <path className="cls-1" d="M111.79,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C113.98,4.34,111.5.38,106.16,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88s3.21,10.66,11.24,10.66c6.93,0,10.06-5.29,10.28-6.17M97.51,9.52c.17-2.03,2.61-6.24,7.26-6.39,6.33,0,7.26,5.11,7.26,6.39h-14.51Z"/>
-        <rect className="cls-1" x="66.69" y="6.47" width="3.76" height="17.37"/>
-        <path className="cls-1" d="M83,0C80.01,0,78.33,1.55,77.33,2.53V0h-3.76v23.84h3.76v-13c0-3.82,1.62-7.71,6.14-7.71,3.46,0,4.76,3.4,4.76,7.85v12.86h3.76v-12.86C91.98,1.27,86.37,0,83,0Z"/>
-        <path className="cls-1" d="M56.41,0c-2.88,0-5.17,1.9-6.02,4.02C48.63.61,46.34,0,44.04,0,42.08,0,40.21,1.3,39.2,2.86V0h-3.76v23.84h3.76v-15.15c0-2.93,2.18-5.55,4.87-5.55,2.24,0,3.57,2.03,3.57,5.55v15.15h3.76v-15.15c0-2.42,2.06-5.55,4.59-5.55s3.8,2.16,3.8,5.55v15.15h3.76v-12.86C63.55,9.19,63.97,0,56.41,0Z"/>
-        <path className="cls-1" d="M10.33.59c-.69-.2-1.4-.31-2.12-.31-1.84,0-3.57,1.2-4.44,2.78V0H0v23.84h3.76v-13.64c0-4.21,2.51-5.77,4.7-6.23.6-.13,1.23-.08,1.86.09V.59Z"/>
-      </svg>
+        className="select-none pointer-events-none object-contain"
+      />
 
       {/* Input & Greeting Box (Absolutely Positioned) */}
       <div 
@@ -440,21 +435,8 @@ const IntroStep = ({ onNext, isEditMode, scrollY }) => {
       {/* SECTION 1: 2페이지 1 */}
       <section className="w-[1620px] h-[2160px] relative shrink-0" style={{ opacity: opacity1, transition: 'opacity 0.1s ease-out' }}>
         {/* Header Logo */}
-        <div style={{ position: 'absolute', left: '752.12px', top: '60px', width: '115.77px', height: '23.87px' }}>
-          <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 115.77 23.84" className="w-full h-full select-none pointer-events-none">
-            <defs>
-              <style>
-                {`.cls-1 { fill: #575759; stroke-width: 0px; }`}
-              </style>
-            </defs>
-            <path className="cls-1" d="M70.45,1.71l-.77-.27.36-.73-.27-.27-.73.36-.27-.77h-.38l-.27.77-.73-.36-.27.27.36.73-.77.27v.38l.77.27-.36.73c.14.14.13.13.27.27l.73-.36.27.77h.38l.27-.77.73.36c.14-.14.13-.13.27-.27l-.36-.73.77-.27v-.38Z"/>
-            <path className="cls-1" d="M28.32,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C30.5,4.34,28.03.38,22.69,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88.17,4.51,3.21,10.66,11.24,10.66,6.93,0,10.06-5.29,10.28-6.17M14.04,9.52c.17-2.03,2.61-6.24,7.26-6.39,6.33,0,7.26,5.11,7.26,6.39h-14.51Z"/>
-            <path className="cls-1" d="M111.79,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C113.98,4.34,111.5.38,106.16,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88s3.21,10.66,11.24,10.66,10.06-5.29,10.28-6.17M97.51,9.52c.17-2.03,2.61-6.24,7.26-6.39,6.33,0,7.26,5.11,7.26,6.39h-14.51Z"/>
-            <rect className="cls-1" x="66.69" y="6.47" width="3.76" height="17.37"/>
-            <path className="cls-1" d="M83,0C80.01,0,78.33,1.55,77.33,2.53V0h-3.76v23.84h3.76v-13c0-3.82,1.62-7.71,6.14-7.71,3.46,0,4.76,3.4,4.76,7.85v12.86h3.76v-12.86C91.98,1.27,86.37,0,83,0Z"/>
-            <path className="cls-1" d="M56.41,0c-2.88,0-5.17,1.9-6.02,4.02C48.63.61,46.34,0,44.04,0,42.08,0,40.21,1.3,39.2,2.86V0h-3.76v23.84h3.76v-15.15c0-2.93,2.18-5.55,4.87-5.55,2.24,0,3.57,2.03,3.57,5.55v15.15h3.76v-15.15c0-2.42,2.06-5.55,4.59-5.55s3.8,2.16,3.8,5.55v15.15h3.76v-12.86C63.55,9.19,63.97,0,56.41,0Z"/>
-            <path className="cls-1" d="M10.33.59c-.69-.2-1.4-.31-2.12-.31-1.84,0-3.57,1.2-4.44,2.78V0H0v23.84h3.76v-13.64c0-4.21,2.51-5.77,4.7-6.23.6-.13,1.23-.08,1.86.09V.59Z"/>
-          </svg>
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: '60px', width: '173.66px', height: '35.81px' }}>
+          <img src="디자인!/로고_0909.svg" alt="로고" className="w-full h-full object-contain select-none pointer-events-none" />
         </div>
 
         {/* Character Image */}
@@ -850,7 +832,7 @@ const MoodStep = ({ moods, scrollY, textData, onTextUpdate, onMoodClick, onMoodS
             {/* Interactive Groups (Images + Dark Overlay + Numbers + Labels + Touch Paths) */}
             {[
               { id: 2, name: '로맨틱', d: 'M719.74,673.87l395.73-163.92,124.22-255.68c-50.42-50.42-49.94-49.94-100.36-100.36l-255.68,124.22-163.92,395.73Z', clip: 'clippath', img_transform: 'translate(1100.46 14.89) rotate(47.09) scale(.22)', img_href: 'mood_slice_1.jpeg', num: '02', num_trans: 'translate(966.89 411.75)', lbl: '로맨틱한', lbl_trans: 'translate(951.56 460.02)' },
-              { id: 4, name: '액티브한', d: 'M664.37,696.8l-395.72-163.91L0,625.84c0,71.31,0,70.64,0,141.92l268.63,92.96,395.73-163.92Z', clip: 'clippath-1', img_transform: 'translate(674.37 508.5) rotate(90) scale(.22)', img_href: 'mood_slice_2.jpeg', num: '07', num_trans: 'translate(251.1 714.91)', lbl: '액티브한', lbl_trans: 'translate(235.7 762.24)' },
+              { id: 4, name: '활동적인', d: 'M664.37,696.8l-395.72-163.91L0,625.84c0,71.31,0,70.64,0,141.92l268.63,92.96,395.73-163.92Z', clip: 'clippath-1', img_transform: 'translate(674.37 508.5) rotate(90) scale(.22)', img_href: 'mood_slice_2.jpeg', num: '07', num_trans: 'translate(251.1 714.91)', lbl: '활동적인', lbl_trans: 'translate(235.7 762.24)' },
               { id: 5, name: '전원풍의', d: 'M673.87,673.87l-163.91-395.72-255.69-124.24c-50.42,50.42-49.93,49.93-100.36,100.36l124.23,255.68,395.73,163.92Z', clip: 'clippath-2', img_transform: 'translate(860.72 552.55) rotate(135) scale(.22)', img_href: 'mood_slice_3.jpeg', num: '08', num_trans: 'translate(366.44 411.75)', lbl: '전원풍의', lbl_trans: 'translate(351.1 460.02)' },
               { id: 3, name: '우아한', d: 'M1124.97,532.89l-395.73,163.92,395.73,163.91,268.64-92.95c0-71.31,0-70.62,0-141.92l-268.63-92.96Z', clip: 'clippath-3', img_transform: 'translate(1393.61 493.1) rotate(90) scale(.22)', img_href: 'mood_slice_4.jpeg', num: '03', num_trans: 'translate(1098.68 714.91)', lbl: '우아한', lbl_trans: 'translate(1093.53 762.24)' },
               { id: 8, name: '이국적인', d: 'M696.8,664.37l163.92-395.73L767.76,0c-71.29,0-70.62,0-141.92,0l-92.95,268.64,163.92,395.73Z', clip: 'clippath-4', img_transform: 'translate(485.57 -61.29) scale(.22)', img_href: 'mood_slice_5.jpeg', num: '01', num_trans: 'translate(671.6 309.21)', lbl: '이국적인', lbl_trans: 'translate(652 352.92)' },
@@ -943,9 +925,9 @@ const MoodStep = ({ moods, scrollY, textData, onTextUpdate, onMoodClick, onMoodS
         )}
 
         {/* Centered Footer: SVG logo */}
-        <div style={{ position: 'absolute', left: '752.12px', top: `${lh - 90}px`, width: '115.77px', height: '23.87px' }} className="select-none pointer-events-none">
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: `${lh - 95}px`, width: '173.66px', height: '35.81px' }} className="select-none pointer-events-none">
           <img
-            src="디자인!/로고.svg"
+            src="디자인!/로고_0909.svg"
             alt="로고"
             className="w-full h-full object-contain"
           />
@@ -1060,14 +1042,14 @@ const MoodDetailView = ({ mood, layoutHeight, onBack }) => {
   
   const getMoodboardImage = (moodId) => {
     const map = {
-      8: '디자인!/무보1.jpg', // 01 이국적인
-      2: '디자인!/무보2.jpg', // 02 로맨틱한
-      3: '디자인!/무보3.jpg', // 03 우아한
-      1: '디자인!/바꿔4최종.jpg', // 04 지적인
-      6: '디자인!/무보5.jpg', // 05 모던한
-      7: '디자인!/무보6.jpg', // 06 미니멀한
-      4: '디자인!/무보7.jpg', // 07 활동적인
-      5: '디자인!/무보8.jpg'  // 08 전원풍의
+      8: '디자인!/0909-01.webp', // 01 이국적인
+      2: '디자인!/0909-02.webp', // 02 로맨틱한
+      3: '디자인!/0909-03.webp', // 03 우아한
+      1: '디자인!/0909-04.webp', // 04 지적인
+      6: '디자인!/0909-05.webp', // 05 모던한
+      7: '디자인!/0909-06.webp', // 06 미니멀한
+      4: '디자인!/0909-07.webp', // 07 활동적인
+      5: '디자인!/0909-08.webp'  // 08 전원풍의
     };
     return map[moodId] || '';
   };
@@ -1238,7 +1220,7 @@ const App = () => {
     mood_header_desc: { content: "각 무드를 클릭하시면 설명을 보실 수 있습니다. 마음에 드는 무드를 골라 하트를 눌러보세요.", fontSize: 22, lineHeight: 1.5, textAlign: 'center', marginTop: 0, marginLeft: 0 }
   });
   const [introData, setIntroData] = useState({ video: "https://assets.mixkit.co/videos/preview/mixkit-curious-white-cat-looking-at-the-camera-43431-large.mp4", photos: [{ url: "https://images.unsplash.com/photo-1559445366-4e5659837965?auto=format&fit=crop&q=80&w=800", width: 48, height: 450 }, { url: "https://images.unsplash.com/photo-1515488764276-beab7607c1e6?auto=format&fit=crop&q=80&w=800", width: 48, height: 450 }] });
-  const [moods, setMoods] = useState([{ id: 1, name: '지적인', liked: false, image: null }, { id: 2, name: '로맨틱', liked: false, image: null }, { id: 3, name: '우아한', liked: false, image: null }, { id: 4, name: '액티브한', liked: false, image: null }, { id: 5, name: '전원풍의', liked: false, image: null }, { id: 6, name: '모던한', liked: false, image: null }, { id: 7, name: '미니멀한', liked: false, image: null }, { id: 8, name: '이국적인', liked: false, image: null }]);
+  const [moods, setMoods] = useState([{ id: 1, name: '지적인', liked: false, image: null }, { id: 2, name: '로맨틱', liked: false, image: null }, { id: 3, name: '우아한', liked: false, image: null }, { id: 4, name: '활동적인', liked: false, image: null }, { id: 5, name: '전원풍의', liked: false, image: null }, { id: 6, name: '모던한', liked: false, image: null }, { id: 7, name: '미니멀한', liked: false, image: null }, { id: 8, name: '이국적인', liked: false, image: null }]);
   const [currentMoodId, setCurrentMoodId] = useState('5.1');
   const [bgColor, setBgColor] = useState('#ffffff');
   const [zoom, setZoom] = useState(1); 
@@ -1256,7 +1238,7 @@ const App = () => {
     1: { ko: '지적인', en: 'Intelligent' },
     2: { ko: '로맨틱한', en: 'Romantic' },
     3: { ko: '우아한', en: 'Elegant' },
-    4: { ko: '액티브한', en: 'Active' },
+    4: { ko: '활동적인', en: 'Active' },
     5: { ko: '전원풍의', en: 'Country' },
     6: { ko: '모던한', en: 'Modern' },
     7: { ko: '미니멀한', en: 'Minimal' },
@@ -1539,14 +1521,14 @@ const App = () => {
     if (rootEl) {
       rootEl.style.backgroundColor = bodyBg; // Dynamically match root background with current page background!
       rootEl.style.height = '2160px'; // Lock layout height to 2160px design height
-      if (currentPage === 4) {
-        rootEl.style.overflow = 'hidden'; // Keep page 4 contained exactly inside #root boundaries!
+      if (currentPage === 4 || (currentPage === 3 && showGridDirectly)) {
+        rootEl.style.overflow = 'hidden'; // Keep single-viewport pages contained exactly inside #root boundaries!
         rootEl.scrollTop = 0;
       } else {
         rootEl.style.overflow = ''; // Let default CSS rule overflow-x: hidden / overflow-y: auto take effect!
       }
     }
-  }, [currentPage, selectedMood, bgColor, layouts, windowSize]);
+  }, [currentPage, selectedMood, bgColor, layouts, windowSize, showGridDirectly]);
 
   useEffect(() => {
     if (!isStateLoaded) return;
@@ -1595,23 +1577,23 @@ const App = () => {
     };
   }, []);
 
-  // Force scrollTop = 0 lock while currentPage === 4 to block Safari scroll shifts
+  // Force scrollTop = 0 lock while currentPage === 4 or (currentPage === 3 && showGridDirectly) to block Safari scroll shifts
   useEffect(() => {
     const rootEl = document.getElementById('root');
     if (!rootEl) return;
     const lockScroll = () => {
-      if (currentPage === 4) {
+      if (currentPage === 4 || (currentPage === 3 && showGridDirectly)) {
         rootEl.scrollTop = 0;
       }
     };
-    if (currentPage === 4) {
+    if (currentPage === 4 || (currentPage === 3 && showGridDirectly)) {
       rootEl.scrollTop = 0;
       rootEl.addEventListener('scroll', lockScroll);
     }
     return () => {
       rootEl.removeEventListener('scroll', lockScroll);
     };
-  }, [currentPage]);
+  }, [currentPage, showGridDirectly]);
   const currentMood = MOOD_DATA[currentMoodId] || MOOD_DATA['5.1'];
   const isStep5 = currentMood.step === '05';
   const isStep6 = currentMood.step === '06';
@@ -2645,17 +2627,9 @@ ${!hasSelections ? `
           {/* Bottom Logo */}
           <div
             className="absolute pointer-events-none"
-            style={{ bottom: '65.6142px', left: '50%', transform: 'translateX(-50%)', width: '115.7675px', height: '23.8725px', zIndex: 150 }}
+            style={{ bottom: '59.6142px', left: '50%', transform: 'translateX(-50%)', width: '144.7125px', height: '29.8375px', zIndex: 150 }}
           >
-            <svg viewBox="0 0 115.77 23.84" style={{ width: '100%', height: '100%' }}>
-              <path fill="#575759" d="M70.45,1.71l-.77-.27.36-.73-.27-.27-.73.36-.27-.77h-.38l-.27.77-.73-.36-.27.27.36.73-.77.27v.38l.77.27-.36.73c.14.14.13.13.27.27l.73-.36.27.77h.38l.27-.77.73.36c.14-.14.13-.13.27-.27l-.36-.73.77-.27v-.38Z"/>
-              <path fill="#575759" d="M28.32,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C30.5,4.34,28.03.38,22.69,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88.17,4.51,3.21,10.66,11.24,10.66,6.93,0,10.06-5.29,10.28-6.17M14.04,9.52c.17-2.03,2.61-6.24,7.26-6.39,6.33,0,7.26,5.11,7.26,6.39h-14.51Z"/>
-              <path fill="#575759" d="M111.79,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C113.98,4.34,111.5.38,106.16,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88s3.21,10.66,11.24,10.66c6.93,0,10.06-5.29,10.28-6.17M97.51,9.52c.17-2.03,2.61-6.24,7.26-6.39,7.26,0,7.26,5.11,7.26,6.39h-14.51Z"/>
-              <rect fill="#575759" x="66.69" y="6.47" width="3.76" height="17.37"/>
-              <path fill="#575759" d="M83,0C80.01,0,78.33,1.55,77.33,2.53V0h-3.76v23.84h3.76v-13c0-3.82,1.62-7.71,6.14-7.71,3.46,0,4.76,3.4,4.76,7.85v12.86h3.76v-12.86C91.98,1.27,86.37,0,83,0Z"/>
-              <path fill="#575759" d="M56.41,0c-2.88,0-5.17,1.9-6.02,4.02C48.63.61,46.34,0,44.04,0,42.08,0,40.21,1.3,39.2,2.86V0h-3.76v23.84h3.76v-15.15c0-2.93,2.18-5.55,4.87-5.55,2.24,0,3.57,2.03,3.57,5.55v15.15h3.76v-15.15c0-2.42,2.06-5.55,4.59-5.55s3.8,2.16,3.8,5.55v15.15h3.76v-12.86C63.55,9.19,63.97,0,56.41,0Z"/>
-              <path fill="#575759" d="M10.33.59c-.69-.2-1.4-.31-2.12-.31-1.84,0-3.57,1.2-4.44,2.78V0H0v23.84h3.76v-13.64c0-4.21,2.51-5.77,4.7-6.23.6-.13,1.23-.08,1.86.09V.59Z"/>
-            </svg>
+            <img src="디자인!/로고_0909.svg" alt="로고" className="w-full h-full object-contain" />
           </div>
         </div>
       );
@@ -2876,17 +2850,9 @@ ${!hasSelections ? `
         {/* Bottom Logo */}
         <div
           className="absolute pointer-events-none"
-          style={{ bottom: '65.6142px', left: '50%', transform: 'translateX(-50%)', width: '115.7675px', height: '23.8725px', zIndex: 150 }}
+          style={{ bottom: '59.6142px', left: '50%', transform: 'translateX(-50%)', width: '144.7125px', height: '29.8375px', zIndex: 150 }}
         >
-          <svg viewBox="0 0 115.77 23.84" style={{ width: '100%', height: '100%' }}>
-            <path fill="#575759" d="M70.45,1.71l-.77-.27.36-.73-.27-.27-.73.36-.27-.77h-.38l-.27.77-.73-.36-.27.27.36.73-.77.27v.38l.77.27-.36.73c.14.14.13.13.27.27l.73-.36.27.77h.38l.27-.77.73.36c.14-.14.13-.13.27-.27l-.36-.73.77-.27v-.38Z"/>
-            <path fill="#575759" d="M28.32,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C30.5,4.34,28.03.38,22.69,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88.17,4.51,3.21,10.66,11.24,10.66,6.93,0,10.06-5.29,10.28-6.17M14.04,9.52c.17-2.03,2.61-6.24,7.26-6.39,6.33,0,7.26,5.11,7.26,6.39h-14.51Z"/>
-            <path fill="#575759" d="M111.79,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C113.98,4.34,111.5.38,106.16,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88s3.21,10.66,11.24,10.66c6.93,0,10.06-5.29,10.28-6.17M97.51,9.52c.17-2.03,2.61-6.24,7.26-6.39,7.26,0,7.26,5.11,7.26,6.39h-14.51Z"/>
-            <rect fill="#575759" x="66.69" y="6.47" width="3.76" height="17.37"/>
-            <path fill="#575759" d="M83,0C80.01,0,78.33,1.55,77.33,2.53V0h-3.76v23.84h3.76v-13c0-3.82,1.62-7.71,6.14-7.71,3.46,0,4.76,3.4,4.76,7.85v12.86h3.76v-12.86C91.98,1.27,86.37,0,83,0Z"/>
-            <path fill="#575759" d="M56.41,0c-2.88,0-5.17,1.9-6.02,4.02C48.63.61,46.34,0,44.04,0,42.08,0,40.21,1.3,39.2,2.86V0h-3.76v23.84h3.76v-15.15c0-2.93,2.18-5.55,4.87-5.55,2.24,0,3.57,2.03,3.57,5.55v15.15h3.76v-15.15c0-2.42,2.06-5.55,4.59-5.55s3.8,2.16,3.8,5.55v15.15h3.76v-12.86C63.55,9.19,63.97,0,56.41,0Z"/>
-            <path fill="#575759" d="M10.33.59c-.69-.2-1.4-.31-2.12-.31-1.84,0-3.57,1.2-4.44,2.78V0H0v23.84h3.76v-13.64c0-4.21,2.51-5.77,4.7-6.23.6-.13,1.23-.08,1.86.09V.59Z"/>
-          </svg>
+          <img src="디자인!/로고_0909.svg" alt="로고" className="w-full h-full object-contain" />
         </div>
       </div>
     );
@@ -3099,7 +3065,7 @@ ${!hasSelections ? `
       },
       4: {
         title: 'Active Style',
-        sub: '액티브한',
+        sub: '활동적인',
         lines: [
           '에너지 넘치고 활기찬 움직임을 위한',
           '편안함이 직관적으로 보여요',
@@ -3260,20 +3226,20 @@ ${!hasSelections ? `
             className="absolute z-10 pointer-events-none"
             style={{
               position: 'absolute',
-              top: '73.7709px',
-              right: '71.3616px',
-              width: '115.7675px',
-              height: '23.8725px'
+              top: '65px',
+              right: '68.3616px',
+              width: '144.7125px',
+              height: '29.8375px'
             }}
           >
-            <svg viewBox="0 0 115.77 23.84" style={{ width: '100%', height: '100%' }}>
-              <path fill="#575759" d="M70.45,1.71l-.77-.27.36-.73-.27-.27-.73.36-.27-.77h-.38l-.27.77-.73-.36-.27.27.36.73-.77.27v.38l.77.27-.36.73c.14.14.13.13.27.27l.73-.36.27.77h.38l.27-.77.73.36c.14-.14.13-.13.27-.27l-.36-.73.77-.27v-.38Z"/>
-              <path fill="#575759" d="M28.32,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C30.5,4.34,28.03.38,22.69,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88.17,4.51,3.21,10.66,11.24,10.66,6.93,0,10.06-5.29,10.28-6.17M14.04,9.52c.17-2.03,2.61-6.24,7.26-6.39,6.33,0,7.26,5.11,7.26,6.39h-14.51Z"/>
-              <path fill="#575759" d="M111.79,16.58s-2.13,4.11-6.45,4.11c-5.66,0-7.81-4.81-7.81-7.77h18.15c.07-.67.1-1.34.08-2.01-.05-1.73-.34-3.77-1.34-5.7C113.98,4.34,111.5.38,106.16,0c-4.69-.33-7.36,1.73-8.89,3.3-2.45,2.53-3.65,5.51-3.49,9.88s3.21,10.66,11.24,10.66c6.93,0,10.06-5.29,10.28-6.17M97.51,9.52c.17-2.03,2.61-6.24,7.26-6.39,7.26,0,7.26,5.11,7.26,6.39h-14.51Z"/>
-              <rect fill="#575759" x="66.69" y="6.47" width="3.76" height="17.37"/>
-              <path fill="#575759" d="M83,0C80.01,0,78.33,1.55,77.33,2.53V0h-3.76v23.84h3.76v-13c0-3.82,1.62-7.71,6.14-7.71,3.46,0,4.76,3.4,4.76,7.85v12.86h3.76v-12.86C91.98,1.27,86.37,0,83,0Z"/>
-              <path fill="#575759" d="M56.41,0c-2.88,0-5.17,1.9-6.02,4.02C48.63.61,46.34,0,44.04,0,42.08,0,40.21,1.3,39.2,2.86V0h-3.76v23.84h3.76v-15.15c0-2.93,2.18-5.55,4.87-5.55,2.24,0,3.57,2.03,3.57,5.55v15.15h3.76v-15.15c0-2.42,2.06-5.55,4.59-5.55s3.8,2.16,3.8,5.55v15.15h3.76v-12.86C63.55,9.19,63.97,0,56.41,0Z"/>
-              <path fill="#575759" d="M10.33.59c-.69-.2-1.4-.31-2.12-.31-1.84,0-3.57,1.2-4.44,2.78V0H0v23.84h3.76v-13.64c0-4.21,2.51-5.77,4.7-6.23.6-.13,1.23-.08,1.86.09V.59Z"/>
+            <svg viewBox="0 0 1307.9 360.87" className="w-full h-full object-contain">
+              <path fill="#575759" d="M806.74,28.16l-12.88-4.46,5.96-12.26c-2.27-2.27-2.25-2.25-4.52-4.52l-12.26,5.96-4.46-12.88h-6.39l-4.46,12.88-12.26-5.96c-2.27,2.27-2.25,2.25-4.52,4.52l5.96,12.26-12.88,4.46v6.39l12.88,4.46-5.96,12.26c2.27,2.27,2.25,2.25,4.52,4.52l12.26-5.96,4.46,12.88h6.39l4.46-12.88,12.26,5.96c2.27-2.27,2.25-2.25,4.52-4.52l-5.96-12.26,12.88-4.46v-6.39Z"/>
+              <path fill="#575759" d="M320.03,282.2c-.22.4-24.15,41.78-73.33,41.2-60.81-.72-74.27-55.16-74.27-88.83h179.93c1.94-39.39-2.46-58.97-11.51-80.13-5.09-11.89-30.96-57.99-87.99-60.67-48.24-2.27-74.97,21.52-91.16,41.9-14.03,17.66-30.89,48.2-30.94,99.25-.06,63.6,35.88,123.12,109.49,125.85,78.73,2.91,107.53-55.46,110.06-65.45M173.67,201.9c1.42-27.03,20.08-72.09,67.9-73.66,57.52-1.89,71.52,54.57,71.52,73.66h-139.42Z"/>
+              <path fill="#575759" d="M1275.14,282.17c-.22.4-24.16,41.8-73.36,41.22-60.83-.72-74.3-55.18-74.3-88.86h180c1.94-39.41-2.46-58.99-11.51-80.16-5.09-11.9-30.97-58.01-88.02-60.7-48.26-2.27-74.99,21.53-91.19,41.91-14.04,17.67-30.9,48.21-30.95,99.28-.06,63.62,35.89,123.17,109.53,125.89,78.76,2.91,107.56-55.48,110.1-65.47M1128.74,201.84c1.43-27.04,20.09-72.12,67.92-73.69,57.54-1.89,71.55,54.59,71.55,73.69h-139.47Z"/>
+              <rect fill="#575759" x="754.3" y="93.53" width="42.16" height="267.34"/>
+              <path fill="#575759" d="M951.53,95.39c-30.63,3.99-52.23,21.81-63.25,40.52v-42.38h-42.16v267.34h42.16v-145.83c0-46.54,23.62-86.42,68.86-86.42,38.83,0,53.34,38.13,53.34,88v144.25h42.16v-144.25c0-121.34-66.16-125.78-101.11-121.23Z"/>
+              <path fill="#575759" d="M624.45,93.59c-32.31,1.66-58.02,28.29-67.57,52.07-15.4-41.41-42.59-53.6-71.17-52.13-21.9,1.13-44.32,16.57-54.19,39.12v-39.12h-42.16v267.34h42.16v-164.74c0-38.88,24.44-67.37,54.61-67.37,25.13,0,40.09,22.77,40.09,62.19v169.92h42.16v-169.92c0-27.12,19.02-62.19,51.44-62.19,28.05,0,42.62,24.23,42.62,62.19v169.92h42.16v-144.25c0-85.19-26.03-125.81-80.15-123.04Z"/>
+              <path fill="#575759" d="M122.4,94.9c-9.16-2.31-29.64-.74-41.82,4.5s-30.18,17.78-38.42,34.67v-40.55H0v267.34h42.16v-153.03c0-47.23,31.16-67.03,52.74-69.85,5.57-.73,19.76-1.17,27.5.52v-43.62Z"/>
             </svg>
           </div>
 
