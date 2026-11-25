@@ -1372,28 +1372,25 @@ const App = () => {
 
         let state = await window.localforage.getItem('gumu_app_state');
         if (!state) {
-          try {
-            const response = await fetch('../gumu_세팅_데이터.json');
-            if (response.ok) {
-              const data = await response.json();
-              if (data && data.gumu_app_state) {
-                state = data.gumu_app_state;
-                await window.localforage.setItem('gumu_app_state', state);
-                console.log('Successfully auto-imported data from ../gumu_세팅_데이터.json');
-              }
-            }
-          } catch (err) {
+          // EXPORT 파일(state 그대로)과 { gumu_app_state: state } 형태 둘 다 지원
+          const extractState = (data) => {
+            if (!data) return null;
+            if (data.gumu_app_state) return data.gumu_app_state;
+            if (data.layouts || data.moods) return data;
+            return null;
+          };
+          for (const path of ['gumu_세팅_데이터.json', '../gumu_세팅_데이터.json']) {
             try {
-              const response = await fetch('gumu_세팅_데이터.json');
-              if (response.ok) {
-                const data = await response.json();
-                if (data && data.gumu_app_state) {
-                  state = data.gumu_app_state;
-                  await window.localforage.setItem('gumu_app_state', state);
-                  console.log('Successfully auto-imported data from gumu_세팅_데이터.json');
-                }
+              const response = await fetch(encodeURI(path), { cache: 'no-store' });
+              if (!response.ok) continue;
+              const loaded = extractState(await response.json());
+              if (loaded) {
+                state = loaded;
+                await window.localforage.setItem('gumu_app_state', state);
+                console.log('Successfully auto-imported data from ' + path);
+                break;
               }
-            } catch (err2) {}
+            } catch (err) {}
           }
         }
 
