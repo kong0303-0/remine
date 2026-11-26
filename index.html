@@ -1488,27 +1488,38 @@ const App = () => {
         sessionStorage.setItem('gumu_session_active', 'true');
 
         let state = await window.localforage.getItem('gumu_app_state');
-        if (!state) {
-          // EXPORT 파일(state 그대로)과 { gumu_app_state: state } 형태 둘 다 지원
-          const extractState = (data) => {
-            if (!data) return null;
-            if (data.gumu_app_state) return data.gumu_app_state;
-            if (data.layouts || data.moods) return data;
-            return null;
-          };
-          for (const path of ['gumu_세팅_데이터.json', '../gumu_세팅_데이터.json']) {
-            try {
-              const response = await fetch(encodeURI(path), { cache: 'no-store' });
-              if (!response.ok) continue;
-              const loaded = extractState(await response.json());
-              if (loaded) {
-                state = loaded;
-                await window.localforage.setItem('gumu_app_state', state);
-                console.log('Successfully auto-imported data from ' + path);
-                break;
-              }
-            } catch (err) {}
-          }
+
+        // 깃허브의 세팅 json이 바뀌었으면(=새로 올렸으면) 기기에 남은 옛날 데이터를 자동으로 교체
+        // EXPORT 파일(state 그대로)과 { gumu_app_state: state } 형태 둘 다 지원
+        const extractState = (data) => {
+          if (!data) return null;
+          if (data.gumu_app_state) return data.gumu_app_state;
+          if (data.layouts || data.moods) return data;
+          return null;
+        };
+        // json 내용으로 만든 짧은 지문(버전 확인용)
+        const fingerprint = (text) => {
+          let h = 0;
+          for (let i = 0; i < text.length; i++) { h = ((h << 5) - h + text.charCodeAt(i)) | 0; }
+          return text.length + '_' + h;
+        };
+        for (const path of ['gumu_세팅_데이터.json', '../gumu_세팅_데이터.json']) {
+          try {
+            const response = await fetch(encodeURI(path), { cache: 'no-cache' });
+            if (!response.ok) continue;
+            const text = await response.text();
+            const loaded = extractState(JSON.parse(text));
+            if (!loaded) continue;
+            const newSig = fingerprint(text);
+            const oldSig = await window.localforage.getItem('gumu_seed_signature');
+            if (!state || oldSig !== newSig) {
+              state = loaded;
+              await window.localforage.setItem('gumu_app_state', state);
+              await window.localforage.setItem('gumu_seed_signature', newSig);
+              console.log('Applied latest setting data from ' + path);
+            }
+            break;
+          } catch (err) {}
         }
 
         if (state) {
