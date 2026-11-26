@@ -65,6 +65,12 @@
         }
         @font-face {
             font-family: 'Presentation';
+            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-3Light.woff2') format('woff2');
+            font-weight: 300;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Presentation';
             src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-8ExtraBold.woff2') format('woff2');
             font-weight: 800;
             font-style: normal;
@@ -110,6 +116,20 @@
         }
         .min-w-screen {
             min-width: 100% !important;
+        }
+        /* 노트북(마우스·트랙패드)에서만: 아이패드 화면 바깥 여백을 페이지 배경색보다 살짝 어둡게 */
+        @media (hover: hover) and (pointer: fine) {
+            body::before {
+                content: '';
+                position: fixed;
+                inset: 0;
+                background-color: rgba(0, 0, 0, 0.12); /* 숫자를 키우면 더 어둡게 */
+                pointer-events: none;
+                z-index: 0;
+            }
+            #root {
+                z-index: 1;
+            }
         }
     </style>
 </head>
@@ -574,7 +594,16 @@ const MoodStep = ({ moods, scrollY, textData, onTextUpdate, onMoodClick, onMoodS
     }
   };
 
+  // 노트북(마우스)일 때만 드래그 거리를 화면 크기에 맞게 보정 (터치는 기존 그대로 1)
+  const MOUSE_EASE = 0.6; // 값이 클수록 덜 밀어도 커스텀 시작
+  const getDragFactor = () => {
+    if (!touchStartRef.current || !touchStartRef.current.isMouse) return 1;
+    const s = getAppScale() || 1;
+    return Math.max(1, MOUSE_EASE / s);
+  };
+
   const handleTouchStart = (e, moodId) => {
+    const isMouse = !e.touches;
     const touch = e.touches ? e.touches[0] : e;
     const svgObj = e.currentTarget.viewportElement || e.currentTarget;
     const rect = svgObj.getBoundingClientRect();
@@ -591,10 +620,26 @@ const MoodStep = ({ moods, scrollY, textData, onTextUpdate, onMoodClick, onMoodS
       startY,
       startDist,
       centerX,
-      centerY
+      centerY,
+      isMouse
     };
     
     setDraggedSlice({ id: moodId, tx: 0, ty: 0, opacity: 1 });
+
+    // 마우스: 커서가 조각/팔각형 밖으로 나가도 계속 추적하고, 어디서 놓든 인식
+    if (isMouse) {
+      if (e.preventDefault) e.preventDefault();
+      const onWinMove = (ev) => handleTouchMove(ev);
+      const onWinUp = (ev) => {
+        window.removeEventListener('mousemove', onWinMove);
+        window.removeEventListener('mouseup', onWinUp);
+        const mood = moods.find(m => m.id === moodId);
+        if (mood) handleTouchEnd(ev, mood);
+        else handleTouchCancel(true);
+      };
+      window.addEventListener('mousemove', onWinMove);
+      window.addEventListener('mouseup', onWinUp);
+    }
   };
 
   const handleTouchMove = (e) => {
@@ -607,7 +652,7 @@ const MoodStep = ({ moods, scrollY, textData, onTextUpdate, onMoodClick, onMoodS
     const endY = touch.clientY;
     
     const endDist = Math.sqrt((endX - centerX)**2 + (endY - centerY)**2);
-    const dragDist = Math.sqrt((endX - startX)**2 + (endY - startY)**2);
+    const dragDist = Math.sqrt((endX - startX)**2 + (endY - startY)**2) * getDragFactor();
     
     if (endDist > startDist && dragDist > 5) {
       let vx = 0;
@@ -652,7 +697,7 @@ const MoodStep = ({ moods, scrollY, textData, onTextUpdate, onMoodClick, onMoodS
     const { startX, startY, startDist, centerX, centerY } = touchStartRef.current;
     
     const endDist = Math.sqrt((endX - centerX)**2 + (endY - centerY)**2);
-    const dragDist = Math.sqrt((endX - startX)**2 + (endY - startY)**2);
+    const dragDist = Math.sqrt((endX - startX)**2 + (endY - startY)**2) * getDragFactor();
     
     touchStartRef.current = null;
     
@@ -669,7 +714,9 @@ const MoodStep = ({ moods, scrollY, textData, onTextUpdate, onMoodClick, onMoodS
     setDraggedSlice({ id: null, tx: 0, ty: 0, opacity: 1 });
   };
 
-  const handleTouchCancel = () => {
+  const handleTouchCancel = (force) => {
+    // 마우스 드래그 중에는 팔각형 밖으로 나가도 취소하지 않음
+    if (force !== true && touchStartRef.current && touchStartRef.current.isMouse) return;
     touchStartRef.current = null;
     setDraggedSlice({ id: null, tx: 0, ty: 0, opacity: 1 });
   };
@@ -947,6 +994,14 @@ const MoodDetailView = ({ mood, layoutHeight, onBack }) => {
   const touchStartPos = useRef({ x: 0, y: 0 });
   const hasTriggered = useRef(false);
 
+  // 사용 방법 안내: 한 번의 방문(세션)에서 처음 연 무드보드에서만 표시
+  const [showGuide, setShowGuide] = useState(() => !sessionStorage.getItem('gumu_moodboard_guide_seen'));
+  const dismissGuide = () => {
+    if (!showGuide) return;
+    sessionStorage.setItem('gumu_moodboard_guide_seen', 'true');
+    setShowGuide(false);
+  };
+
   // Keep dragOffsetRef in sync with dragOffset state to avoid re-binding touch listeners during drags
   useEffect(() => {
     dragOffsetRef.current = dragOffset;
@@ -1032,11 +1087,45 @@ const MoodDetailView = ({ mood, layoutHeight, onBack }) => {
     el.addEventListener('touchstart', handleTouchStart, { passive: false });
     el.addEventListener('touchmove', handleTouchMove, { passive: false });
     el.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+    // 노트북(마우스·트랙패드)용: 클릭한 채로 끌어서 밖으로 밀기
+    let isMouseDragging = false;
+    const handleMouseDown = (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault(); // 브라우저 기본 이미지 드래그(고스트 이미지) 방지
+      isMouseDragging = true;
+      touchStartPos.current = { x: e.clientX, y: e.clientY };
+      hasTriggered.current = false;
+    };
+    const handleMouseMove = (e) => {
+      if (!isMouseDragging || hasTriggered.current) return;
+      const scale = getAppScale();
+      const DAMPING = 0.65;
+      setDragOffset({
+        x: ((e.clientX - touchStartPos.current.x) / scale) * DAMPING,
+        y: ((e.clientY - touchStartPos.current.y) / scale) * DAMPING
+      });
+    };
+    const handleMouseUp = () => {
+      if (!isMouseDragging) return;
+      isMouseDragging = false;
+      handleTouchEnd();
+    };
+    const preventNativeDrag = (e) => e.preventDefault();
+
+    el.addEventListener('mousedown', handleMouseDown);
+    el.addEventListener('dragstart', preventNativeDrag);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
     
     return () => {
       el.removeEventListener('touchstart', handleTouchStart);
       el.removeEventListener('touchmove', handleTouchMove);
       el.removeEventListener('touchend', handleTouchEnd);
+      el.removeEventListener('mousedown', handleMouseDown);
+      el.removeEventListener('dragstart', preventNativeDrag);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
     };
   }, [onBack]);
   
@@ -1076,6 +1165,8 @@ const MoodDetailView = ({ mood, layoutHeight, onBack }) => {
         opacity: opacity,
         transition: (dragOffset.x === 0 && dragOffset.y === 0) ? 'opacity 0.3s ease-out' : 'none'
       }}
+      onTouchStart={dismissGuide}
+      onMouseDown={dismissGuide}
     >
       {/* Moodboard Image mapped exactly to the 1620x2160 container bounds (no cutoff or offsets) */}
       {imageSrc && (
@@ -1100,6 +1191,32 @@ const MoodDetailView = ({ mood, layoutHeight, onBack }) => {
           }}
         />
       )}
+
+      {/* 사용 방법 안내 오버레이 (처음 한 번만, 터치/클릭하면 사라짐) */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)', /* 마지막 숫자 = 검은 배경 농도 */
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          pointerEvents: 'none',
+          userSelect: 'none',
+          opacity: showGuide ? 1 : 0,
+          transition: 'opacity 0.4s ease-out',
+          zIndex: 10
+        }}
+      >
+        <p
+          className="font-['Presentation'] break-keep text-center"
+          style={{ color: '#ffffff', fontSize: '20pt', lineHeight: 1.5, fontWeight: 300, margin: 0 }}
+        >
+          이미지를 잡고<br/>
+          바깥으로 드래그하면<br/>
+          원래 화면으로 돌아갑니다
+        </p>
+      </div>
     </div>
   );
 };
@@ -1207,7 +1324,7 @@ const App = () => {
   const [windowSize, setWindowSize] = useState(getViewportSize());
   const [userName, setUserName] = useState("");
   const [scrollY, setScrollY] = useState(0);
-  const [isEditMode, setIsEditMode] = useState(true);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [selectedMood, setSelectedMood] = useState(null);
   const [moodContents, setMoodContents] = useState({});
   const [showGridDirectly, setShowGridDirectly] = useState(false);
@@ -1438,7 +1555,8 @@ const App = () => {
           }
           if (state.currentMoodId) setCurrentMoodId(state.currentMoodId);
           if (state.bgColor) setBgColor(state.bgColor);
-          if (state.isEditMode !== undefined) setIsEditMode(state.isEditMode);
+          // 사이트를 새로 열 때는 항상 사용자 모드로 시작 (같은 세션 안에서 새로고침할 때만 이전 모드 유지)
+          if (state.isEditMode !== undefined && !isFreshSession) setIsEditMode(state.isEditMode);
           if (state.selectedMood && !isFreshSession) setSelectedMood(state.selectedMood);
           if (state.currentPage && !isFreshSession) {
             if (state.currentPage === 4 && !state.selectedMood) {
@@ -1466,7 +1584,14 @@ const App = () => {
       setWindowSize(size);
       
       // Scale to fit the screen width exactly, placing the scrollbar on the screen edge
-      const scale = size.width / 1620;
+      let scale = size.width / 1620;
+
+      // 노트북/데스크톱(마우스·트랙패드 기기)에서만: 화면 높이에도 맞춰 전체가 한 번에 보이도록 축소
+      // 아이패드 등 터치 기기는 위의 기존 방식 그대로 유지
+      const isDesktop = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+      if (isDesktop) {
+        scale = Math.min(size.width / 1620, window.innerHeight / 2160);
+      }
       
       // Center horizontally, align top, and scale from top-center
       rootEl.style.transform = `translateX(-50%) scale(${scale})`;
@@ -1682,6 +1807,7 @@ const App = () => {
     });
     setMoods(prev => prev.map(m => ({ ...m, liked: false })));
     setUserName("");
+    sessionStorage.removeItem('gumu_moodboard_guide_seen'); // 다음 관람객에게 무드보드 안내 다시 표시
     setCurrentPage(1);
     window.scrollTo(0, 0);
   };
@@ -2122,8 +2248,11 @@ const App = () => {
 
         const file = new File([blob], fileName, { type: 'image/png' });
         
+        // 노트북(마우스·트랙패드)에서는 공유창 없이 바로 파일 저장
+        const isDesktop = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
         // Try Web Share API (only works in secure contexts: HTTPS or localhost)
-        if (navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+        if (!isDesktop && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
           try {
             await navigator.share({
               files: [file],
@@ -2144,7 +2273,9 @@ const App = () => {
         const link = document.createElement('a'); 
         link.href = url; 
         link.download = fileName; 
+        document.body.appendChild(link);
         link.click();
+        link.remove();
         
         // Cleanup Blob URL memory
         setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -2154,6 +2285,7 @@ const App = () => {
         document.body.removeChild(clone);
       }
       console.error("Capture or Share failed", err); 
+      alert('이미지 저장에 실패했습니다. (로컬 파일로 열었다면 깃허브 링크로 열어주세요)');
     } 
   };
   
