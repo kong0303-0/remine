@@ -117,8 +117,8 @@
         .min-w-screen {
             min-width: 100% !important;
         }
-        /* 노트북(마우스·트랙패드)에서만: 아이패드 화면 바깥 여백을 페이지 배경색보다 살짝 어둡게 */
-        @media (hover: hover) and (pointer: fine) {
+        /* 노트북(마우스·트랙패드) + 핸드폰(폭 700px 이하)에서: 아이패드 화면 바깥 여백을 페이지 배경색보다 살짝 어둡게 */
+        @media (hover: hover) and (pointer: fine), (max-width: 700px) {
             body::before {
                 content: '';
                 position: fixed;
@@ -1588,18 +1588,26 @@ const App = () => {
   }, []);
 
   useEffect(() => {
+    let lastW = -1;
+    let lastTop = -1;
     const resizeApp = () => {
       const rootEl = document.getElementById('root');
       if (!rootEl) return;
       const size = getViewportSize();
-      setWindowSize(size);
+      const isDesktop = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+      // 핸드폰/아이패드: 스크롤할 때 주소창이 줄었다 늘었다 하며 높이만 바뀌는 resize가 계속 발생함
+      // → 폭이 그대로면 아무것도 다시 계산하지 않음 (계속 다시 그리다 "문제가 반복적으로 발생" 크래시 나는 것 방지)
+      if (!isDesktop && size.width === lastW) return;
+      lastW = size.width;
+
+      setWindowSize(prev => (prev.width === size.width && prev.height === size.height) ? prev : size);
       
       // Scale to fit the screen width exactly, placing the scrollbar on the screen edge
       let scale = size.width / 1620;
 
       // 노트북/데스크톱(마우스·트랙패드 기기)에서만: 화면 높이에도 맞춰 전체가 한 번에 보이도록 축소
       // 아이패드 등 터치 기기는 위의 기존 방식 그대로 유지
-      const isDesktop = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
       if (isDesktop) {
         scale = Math.min(size.width / 1620, window.innerHeight / 2160);
       }
@@ -1607,8 +1615,11 @@ const App = () => {
       // 핸드폰 등 화면이 세로로 더 길어 아래가 남는 경우: 위아래 여백을 똑같이 나눠 정중앙에 배치
       const viewH = window.innerHeight;
       const scaledH = 2160 * scale;
-      const offsetTop = scaledH < viewH ? (viewH - scaledH) / 2 : 0;
-      rootEl.style.top = `${offsetTop}px`;
+      const offsetTop = scaledH < viewH ? Math.round((viewH - scaledH) / 2) : 0;
+      if (offsetTop !== lastTop) {
+        rootEl.style.top = `${offsetTop}px`;
+        lastTop = offsetTop;
+      }
       
       // Center horizontally, align top, and scale from top-center
       rootEl.style.transform = `translateX(-50%) scale(${scale})`;
