@@ -1298,6 +1298,7 @@ const DraggableItem = ({ item, updateItem, deleteItem, isEditMode }) => {
 };
 
 const getAppScale = () => {
+  if (window.__gumuScale) return window.__gumuScale;
   const rootEl = document.getElementById('root');
   if (!rootEl) return 1;
   const rect = rootEl.getBoundingClientRect();
@@ -1616,6 +1617,29 @@ const App = () => {
       const viewH = window.innerHeight;
       const scaledH = 2160 * scale;
       const offsetTop = scaledH < viewH ? Math.round((viewH - scaledH) / 2) : 0;
+
+      // 핸드폰(폭 700px 이하)만: transform 축소는 핸드폰이 원본 크기(1620x2160 x 화소밀도)로 그려서
+      // 스크롤하면 메모리가 터져 새로고침됨 → zoom으로 실제로 작게 그려지게 함
+      const isPhone = !isDesktop && size.width <= 700;
+      window.__gumuScale = scale;
+      if (isPhone) {
+        rootEl.style.transform = 'none';
+        rootEl.style.left = '0px';
+        rootEl.style.zoom = String(scale);
+        // zoom이 top 값에도 적용되는지 기기마다 달라서, 실제 위치를 재서 보정
+        rootEl.style.top = `${offsetTop}px`;
+        if (offsetTop > 0) {
+          const realTop = rootEl.getBoundingClientRect().top;
+          if (realTop > 0 && Math.abs(realTop - offsetTop) > 1) {
+            rootEl.style.top = `${offsetTop * offsetTop / realTop}px`;
+          }
+        }
+        lastTop = offsetTop;
+        return;
+      }
+      rootEl.style.zoom = '';
+      rootEl.style.left = '';
+
       if (offsetTop !== lastTop) {
         rootEl.style.top = `${offsetTop}px`;
         lastTop = offsetTop;
