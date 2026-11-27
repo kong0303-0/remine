@@ -1628,9 +1628,12 @@ const App = () => {
       const isPhone = !isDesktop && size.width <= 700;
       window.__gumuScale = scale;
       if (isPhone) {
-        rootEl.style.transform = 'none';
+        // iPhone은 zoom으로 글자가 9px보다 작아지면 강제로 키워서 깨짐 → zoom은 절반(0.5)만, 나머지는 transform으로 축소
+        const Z = 0.5;
+        rootEl.style.zoom = String(Z);
         rootEl.style.left = '0px';
-        rootEl.style.zoom = String(scale);
+        rootEl.style.transformOrigin = 'top left';
+        rootEl.style.transform = `scale(${scale / Z})`;
         // zoom이 top 값에도 적용되는지 기기마다 달라서, 실제 위치를 재서 보정
         rootEl.style.top = `${offsetTop}px`;
         if (offsetTop > 0) {
