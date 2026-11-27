@@ -1604,6 +1604,12 @@ const App = () => {
         scale = Math.min(size.width / 1620, window.innerHeight / 2160);
       }
       
+      // 핸드폰 등 화면이 세로로 더 길어 아래가 남는 경우: 위아래 여백을 똑같이 나눠 정중앙에 배치
+      const viewH = window.innerHeight;
+      const scaledH = 2160 * scale;
+      const offsetTop = scaledH < viewH ? (viewH - scaledH) / 2 : 0;
+      rootEl.style.top = `${offsetTop}px`;
+      
       // Center horizontally, align top, and scale from top-center
       rootEl.style.transform = `translateX(-50%) scale(${scale})`;
       rootEl.style.transformOrigin = 'top center';
